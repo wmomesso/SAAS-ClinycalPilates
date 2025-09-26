@@ -1,0 +1,11 @@
+Copyright (c) 2025 Wagner Fernando Momesso
+
+Todos os direitos reservados.
+
+Este software é proprietário e de uso exclusivo do autor.
+É proibida a cópia, modificação, redistribuição, revenda ou qualquer outro uso sem autorização expressa e por escrito do autor.
+
+O acesso ao código-fonte é fornecido apenas para fins de colaboração autorizada.
+Nenhum direito de uso comercial é concedido sem contrato formal com o autor.
+
+Contato: suporte@criacoder.com.br
