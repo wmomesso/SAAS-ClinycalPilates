@@ -11,22 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('packages', function (Blueprint $table) {
+        Schema::create('stock_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('clinic_id')->constrained('clinics')->onDelete('cascade');
-            $table->foreignId('service_type_id')->constrained('service_types');
             $table->string('name');
             $table->text('description')->nullable();
-            $table->unsignedInteger('number_of_sessions');
-            $table->decimal('price', 10, 2);
-            $table->unsignedInteger('validity_in_days')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->string('sku')->nullable()->unique(); // Stock Keeping Unit
+            $table->string('unit')->default('un')->comment('un, cx, pct, ml, g, etc.');
+            $table->integer('quantity')->default(0);
+            $table->integer('min_stock_level')->default(0)->comment('Nível para alerta de reposição');
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('packages');
+        Schema::dropIfExists('stock_items');
     }
 };

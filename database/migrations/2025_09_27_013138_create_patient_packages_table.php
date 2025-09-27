@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('patient_subscriptions', function (Blueprint $table) {
+        Schema::create('patient_packages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
-            $table->foreignId('package_id')->constrained('packages')->onDelete('cascade');
-            // A fatura que originou a compra deste pacote
+            $table->foreignId('service_package_id')->constrained('service_packages')->onDelete('cascade');
             $table->foreignId('invoice_id')->nullable()->constrained('invoices')->onDelete('set null');
 
             $table->unsignedInteger('total_sessions');
@@ -30,6 +29,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('patient_subscriptions');
+        Schema::dropIfExists('patient_packages');
     }
 };
