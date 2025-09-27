@@ -69,7 +69,7 @@ O sistema foi projetado para **simplificar operações diárias** e **melhorar a
 ## 🔐 Segurança
 
 Se você descobrir uma vulnerabilidade de segurança, envie um e-mail para  
-📧 **[seu-email@dominio.com]** ao invés de abrir uma issue pública.
+📧 **[complice@criacoder.com.br]** ao invés de abrir uma issue pública.
 
 ---
 
@@ -83,8 +83,11 @@ Consulte o arquivo [LICENSE](./LICENSE.txt) para mais detalhes.
 
 ## 📞 Suporte
 
-Para suporte técnico, entre em contato através do e-mail:  
-📧 **suporte@seudominio.com**
+Para suporte técnico, entre em contato através do e-mail ou telefone:  
+
+**(+5511) 9 6745-1957**
+
+📧 **suporte@criacoder.com.br**
 
 ---
 
