@@ -60,5 +60,45 @@ class ClinicUserController extends Controller
         return redirect()->route('clinic-users.index')->with('success', 'Usuário criado com sucesso.');
     }
 
+    //edit
+    public function edit($user)
+    {
+        $user = User::find($user);
+        $roles = Role::whereNotIn('name', ['super-admin', 'paciente'])->get();
+        return view('saas.clinics.users.edit', compact('user', 'roles'));
+    }
+
+    //update
+    public function update(User $clinic_user, Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $clinic_user->id,
+            'password' => 'nullable|string|min:8',
+            'role' => 'required|string|exists:roles,name',
+        ]);
+
+        $clinic_user->name = $request->name;
+        $clinic_user->email = $request->email;
+
+// Só atualiza a senha se foi fornecida
+        if ($request->filled('password')) {
+            $clinic_user->password = bcrypt($request->password);
+        }
+
+        $clinic_user->save();
+        $clinic_user->syncRoles([$request->role]);
+
+        Alert::success('Sucesso!', 'Usuário atualizado com sucesso.');
+        return redirect()->route('clinic-users.index')->with('success', 'Usuário atualizado com sucesso.');
+    }
+
+    public function show($clinic_user)
+    {
+        $user = User::find($clinic_user);
+        $roles = Role::whereNotIn('name', ['super-admin', 'paciente'])->get();
+        return view('saas.clinics.users.show', compact('user', 'roles'));
+    }
+
     // Implementar métodos edit, update, destroy seguindo a mesma lógica...
 }
