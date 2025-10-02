@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Clinics\Clinic\Clinic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ClinicController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Exibe a página de configurações da clínica do usuário logado.
      * Acessível pelo 'admin-clinica'.
@@ -20,7 +22,7 @@ class ClinicController extends Controller
         // Aplica um policy para garantir que apenas o admin da clínica pode ver as configurações
         $this->authorize('update', $clinic);
 
-        return view('clinic.settings', compact('clinic'));
+        return view('saas.clinics.clinic.settings', compact('clinic'));
     }
 
     /**

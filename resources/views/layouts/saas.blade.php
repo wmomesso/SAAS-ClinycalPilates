@@ -194,5 +194,6 @@
     </main>
 </div>
 @include('sweetalert::alert')
+@stack('js-scripts')
 </body>
 </html>
