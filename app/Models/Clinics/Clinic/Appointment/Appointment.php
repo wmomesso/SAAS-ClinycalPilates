@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Models\Clinics\Clinic\Schedule;
+namespace App\Models\Clinics\Clinic\Appointment;
 
 use App\Models\Clinics\Clinic\Clinic;
 use App\Models\Clinics\Clinic\Patient\Patient;
-use App\Models\Clinics\Clinic\Room;
+use App\Models\Clinics\Clinic\Room\Room;
 use App\Models\Clinics\Clinic\Services\ServiceType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

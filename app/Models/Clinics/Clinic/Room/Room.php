@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models\Clinics\Clinic;
+namespace App\Models\Clinics\Clinic\Room;
 
+use App\Models\Clinics\Clinic\Clinic;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

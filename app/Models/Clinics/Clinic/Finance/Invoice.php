@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Clinics\Clinic\Financial;
+namespace App\Models\Clinics\Clinic\Finance;
 
 use App\Models\Clinics\Clinic\Patient\Patient;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

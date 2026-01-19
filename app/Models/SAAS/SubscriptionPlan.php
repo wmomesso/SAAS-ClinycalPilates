@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Clinics\SAAS;
+namespace App\Models\SAAS;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
