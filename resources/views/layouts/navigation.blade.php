@@ -16,6 +16,39 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-sm font-semibold">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    <x-nav-link :href="route('patients.index')" :active="request()->routeIs('patients.*')" class="text-sm font-semibold">
+                        {{ __('Pacientes') }}
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('appointments.index')" :active="request()->routeIs('appointments.*')" class="text-sm font-semibold">
+                        {{ __('Agenda') }}
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('health-insurances.index')" :active="request()->routeIs('health-insurances.*')" class="text-sm font-semibold">
+                        {{ __('Convênios') }}
+                    </x-nav-link>
+
+                    <div class="hidden sm:flex sm:items-center sm:ms-2">
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-semibold rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <div>Financeiro</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('bank-accounts.index')">Contas Bancárias</x-dropdown-link>
+                                <x-dropdown-link :href="route('payables.index')">Contas a Pagar</x-dropdown-link>
+                                <x-dropdown-link :href="route('receivables.index')">Contas a Receber</x-dropdown-link>
+                                <x-dropdown-link :href="route('invoices.index')">Faturamento</x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
                     @endunless
                 </div>
             </div>
@@ -83,6 +116,26 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('patients.index')" :active="request()->routeIs('patients.*')">
+                {{ __('Pacientes') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('appointments.index')" :active="request()->routeIs('appointments.*')">
+                {{ __('Agenda') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('health-insurances.index')" :active="request()->routeIs('health-insurances.*')">
+                {{ __('Convênios') }}
+            </x-responsive-nav-link>
+
+            <div class="border-t border-gray-200 dark:border-gray-600 pt-2 pb-1">
+                <div class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Financeiro</div>
+                <x-responsive-nav-link :href="route('bank-accounts.index')" :active="request()->routeIs('bank-accounts.*')">Contas Bancárias</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('payables.index')" :active="request()->routeIs('payables.*')">Contas a Pagar</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('receivables.index')" :active="request()->routeIs('receivables.*')">Contas a Receber</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('invoices.index')" :active="request()->routeIs('invoices.*')">Faturamento</x-responsive-nav-link>
+            </div>
             @endunless
         </div>
 

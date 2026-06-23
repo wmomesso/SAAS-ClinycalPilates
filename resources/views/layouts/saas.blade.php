@@ -524,6 +524,18 @@
                     </a>
                 </li>
 
+                {{-- Convênios --}}
+                <li>
+                    <a href="{{ route('health-insurances.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 group {{ request()->routeIs('health-insurances.*') ? 'bg-primary-50/80 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 shadow-sm ring-1 ring-primary-500/10' : '' }}">
+                        <div class="flex items-center justify-center transition-transform group-hover:scale-110">
+                            <svg class="w-5 h-5 transition-colors duration-200 {{ request()->routeIs('health-insurances.*') ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        <span class="font-semibold text-sm">Convênios</span>
+                    </a>
+                </li>
+
                 {{-- Salas --}}
                 <li>
                     <a href="{{ route('rooms.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 group {{ request()->routeIs('rooms.*') ? 'bg-primary-50/80 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 shadow-sm ring-1 ring-primary-500/10' : '' }}">

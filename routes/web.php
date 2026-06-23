@@ -4,7 +4,12 @@ use App\Http\Controllers\Clinics\Clinic\Appointments\AppointmentController;
 use App\Http\Controllers\Clinics\Clinic\ClinicController;
 use App\Http\Controllers\Clinics\Clinic\Finance\InvoiceController;
 use App\Http\Controllers\Clinics\Clinic\Finance\ServicePackageController;
+use App\Http\Controllers\Clinics\Clinic\HealthInsurance\HealthInsuranceController;
+use App\Http\Controllers\Clinics\Clinic\HealthInsurance\InsuranceGuideController;
 use App\Http\Controllers\Clinics\Clinic\Patients\PatientController;
+use App\Http\Controllers\Clinics\Finance\BankAccountController;
+use App\Http\Controllers\Clinics\Finance\PayableController;
+use App\Http\Controllers\Clinics\Finance\ReceivableController;
 use App\Http\Controllers\Clinics\Clinic\RolePermissionController;
 use App\Http\Controllers\Clinics\Clinic\Rooms\RoomController;
 use App\Http\Controllers\Clinics\Clinic\Services\ServiceTypeController;
@@ -61,6 +66,15 @@ Route::middleware('auth')->group(function () {
     Route::resource('service-packages', ServicePackageController::class);
     Route::resource('invoices', InvoiceController::class);
     Route::post('invoices/{invoice}/payments', [InvoiceController::class, 'addPayment'])->name('invoices.payment');
+
+    // --- Gestão Financeira (Contas e Fluxo) ---
+    Route::resource('bank-accounts', BankAccountController::class);
+    Route::resource('payables', PayableController::class);
+    Route::resource('receivables', ReceivableController::class);
+
+    // --- Sprint 7: Módulo de Convênios ---
+    Route::resource('health-insurances', HealthInsuranceController::class);
+    Route::resource('insurance-guides', InsuranceGuideController::class);
 
     // --- Sprint 6: Módulo SAAS (Assinaturas e Planos) ---
     // Rotas para a Clínica gerenciar sua assinatura

@@ -3,6 +3,7 @@
 namespace App\Models\Clinics\Clinic\Appointment;
 
 use App\Models\Clinics\Clinic\Clinic;
+use App\Models\Clinics\Clinic\HealthInsurance\InsuranceGuide;
 use App\Models\Clinics\Clinic\Patient\Patient;
 use App\Models\Clinics\Clinic\Room\Room;
 use App\Models\Clinics\Clinic\Services\ServiceType;
@@ -23,6 +24,8 @@ class Appointment extends Model
         'professional_id',
         'room_id',
         'service_type_id',
+        'is_insurance',
+        'insurance_guide_id',
         'start_time',
         'end_time',
         'status',
@@ -34,6 +37,7 @@ class Appointment extends Model
     protected $casts = [
         'start_time' => 'datetime',
         'end_time' => 'datetime',
+        'is_insurance' => 'boolean',
     ];
 
     public function clinic(): BelongsTo
@@ -59,5 +63,10 @@ class Appointment extends Model
     public function serviceType(): BelongsTo
     {
         return $this->belongsTo(ServiceType::class);
+    }
+
+    public function insuranceGuide(): BelongsTo
+    {
+        return $this->belongsTo(InsuranceGuide::class);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Models\Clinics\Clinic\Finance;
 
+use App\Models\Clinics\Clinic\HealthInsurance\HealthInsurance;
+use App\Models\Clinics\Clinic\HealthInsurance\InsuranceGuide;
 use App\Models\Clinics\Clinic\Patient\Patient;
 use App\Models\Traits\BelongsToClinic;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,13 +15,35 @@ class Invoice extends Model
 {
     use BelongsToClinic, HasFactory;
 
-    protected $fillable = ['clinic_id', 'patient_id', 'invoice_number', 'status', 'total_amount', 'amount_paid', 'due_date', 'paid_at', 'notes'];
+    protected $fillable = [
+        'clinic_id',
+        'patient_id',
+        'health_insurance_id',
+        'insurance_guide_id',
+        'invoice_number',
+        'status',
+        'total_amount',
+        'amount_paid',
+        'due_date',
+        'paid_at',
+        'notes',
+    ];
 
     protected $casts = ['due_date' => 'date', 'paid_at' => 'datetime'];
 
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class);
+    }
+
+    public function healthInsurance(): BelongsTo
+    {
+        return $this->belongsTo(HealthInsurance::class);
+    }
+
+    public function insuranceGuide(): BelongsTo
+    {
+        return $this->belongsTo(InsuranceGuide::class);
     }
 
     public function items(): HasMany
