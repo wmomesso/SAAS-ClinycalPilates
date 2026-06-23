@@ -13,7 +13,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -23,10 +23,12 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'avatar_path',
         'password',
         'clinic_id', // Adicionado na Etapa 1
         'phone', // Adicionado na Etapa 1
         'specialties', // Adicionado nesta Etapa 3
+        'calendar_color',
     ];
 
     /**
@@ -57,5 +59,34 @@ class User extends Authenticatable
     public function clinic(): BelongsTo
     {
         return $this->belongsTo(Clinic::class);
+    }
+
+    /**
+     * Get the URL for the user's avatar.
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->avatar_path) {
+            return asset('storage/'.$this->avatar_path);
+        }
+
+        return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=3b82f6&color=fff&bold=true';
+    }
+
+    /**
+     * Get the user's initials.
+     */
+    public function getInitialsAttribute(): string
+    {
+        $words = explode(' ', $this->name);
+        $initials = '';
+
+        if (count($words) >= 2) {
+            $initials = strtoupper(substr($words[0], 0, 1).substr(end($words), 0, 1));
+        } else {
+            $initials = strtoupper(substr($this->name, 0, 1));
+        }
+
+        return $initials;
     }
 }

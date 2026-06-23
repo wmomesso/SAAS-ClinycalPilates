@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "preview": "vite preview"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",
@@ -12,6 +13,7 @@
         "alpinejs": "^3.4.2",
         "autoprefixer": "^10.4.21",
         "axios": "^1.11.0",
+        "baseline-browser-mapping": "^2.9.19",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^2.0.0",
         "postcss": "^8.5.6",
@@ -19,6 +21,13 @@
         "vite": "^7.0.4"
     },
     "dependencies": {
-        "flowbite": "^3.1.2"
+        "@fullcalendar/core": "^6.1.20",
+        "@fullcalendar/daygrid": "^6.1.20",
+        "@fullcalendar/interaction": "^6.1.20",
+        "@fullcalendar/list": "^6.1.20",
+        "@fullcalendar/timegrid": "^6.1.20",
+        "chart.js": "^4.5.1",
+        "flowbite": "^3.1.2",
+        "phosphor-icons": "^1.4.2"
     }
 }

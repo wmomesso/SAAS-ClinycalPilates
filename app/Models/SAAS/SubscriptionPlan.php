@@ -4,6 +4,8 @@ namespace App\Models\SAAS;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Cashier\Subscription;
 
 class SubscriptionPlan extends Model
 {
@@ -27,4 +29,9 @@ class SubscriptionPlan extends Model
         'price' => 'decimal:2',
         'is_active' => 'boolean',
     ];
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class, 'stripe_price', 'stripe_plan_id');
+    }
 }

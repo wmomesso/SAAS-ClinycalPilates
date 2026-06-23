@@ -6,6 +6,7 @@ use App\Models\Clinics\Clinic\Clinic;
 use App\Models\Clinics\Clinic\Patient\Patient;
 use App\Models\Clinics\Clinic\Room\Room;
 use App\Models\Clinics\Clinic\Services\ServiceType;
+use App\Models\Traits\BelongsToClinic;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Appointment extends Model
 {
-    use HasFactory, SoftDeletes;
+    use BelongsToClinic, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'clinic_id',

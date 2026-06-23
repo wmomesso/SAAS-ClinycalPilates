@@ -84,6 +84,9 @@
                     Perfil
                 </th>
                 <th scope="col" class="px-6 py-3">
+                    Cor
+                </th>
+                <th scope="col" class="px-6 py-3">
                     <span class="sr-only">Edit</span>
                 </th>
             </tr>
@@ -101,7 +104,18 @@
                     {{ $user->email }}
                 </td>
                 <td class="px-6 py-4">
-                    {{ $user->getRoleNames()->first() }}
+                    @foreach($user->roles as $role)
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 mr-1">
+                            {{ $role->name }}
+                        </span>
+                    @endforeach
+                </td>
+                <td class="px-6 py-4">
+                    @if($user->hasRole('profissional') && $user->calendar_color)
+                        <div class="w-6 h-6 rounded border border-gray-300 dark:border-gray-600 shadow-sm" style="background-color: {{ $user->calendar_color }}" title="{{ $user->calendar_color }}"></div>
+                    @else
+                        <span class="text-gray-400">-</span>
+                    @endif
                 </td>
                 <td class="px-6 py-4 text-right">
                     <a href="{{ route('clinic-users.edit', $user->id) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>

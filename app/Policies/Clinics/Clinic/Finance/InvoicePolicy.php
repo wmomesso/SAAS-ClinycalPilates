@@ -4,11 +4,10 @@ namespace App\Policies\Clinics\Clinic\Finance;
 
 use App\Models\Clinics\Clinic\Finance\Invoice;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class InvoicePolicy
 {
-    public function before(User $user, string $ability): bool|null
+    public function before(User $user, string $ability): ?bool
     {
         if ($user->hasRole('super-admin')) {
             return true;
@@ -19,7 +18,7 @@ class InvoicePolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->can('ver-relatorios-financeiros') || $user->hasRole('admin-clinica');
+        return $user->can('visualizar-financeiro') || $user->hasRole('admin-clinica');
     }
 
     public function view(User $user, Invoice $invoice): bool

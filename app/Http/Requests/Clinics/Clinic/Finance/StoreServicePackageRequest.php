@@ -20,16 +20,12 @@ class StoreServicePackageRequest extends FormRequest
      */
     public function rules(): array
     {
-        $clinicId = auth()->user()->clinic_id;
-
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'service_type_id' => [
                 'required',
-                Rule::exists('service_types', 'id')->where(function ($query) use ($clinicId) {
-                    $query->where('clinic_id', $clinicId);
-                }),
+                Rule::exists('service_types', 'id'),
             ],
             'number_of_sessions' => ['required', 'integer', 'min:1'],
             'price' => ['required', 'numeric', 'min:0'],

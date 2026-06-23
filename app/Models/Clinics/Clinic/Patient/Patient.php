@@ -2,6 +2,7 @@
 
 namespace App\Models\Clinics\Clinic\Patient;
 
+use App\Models\Traits\BelongsToClinic;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Patient extends Model
 {
-    use HasFactory, SoftDeletes;
+    use BelongsToClinic, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'clinic_id',
@@ -23,6 +24,10 @@ class Patient extends Model
         'emergency_contact_phone',
         'address',
         'medical_history',
+        'medications',
+        'allergies',
+        'lifestyle_habits',
+        'blood_type',
         'is_active',
     ];
 

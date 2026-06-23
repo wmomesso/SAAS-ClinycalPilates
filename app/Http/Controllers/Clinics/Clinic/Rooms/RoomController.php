@@ -5,14 +5,10 @@ namespace App\Http\Controllers\Clinics\Clinic\Rooms;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Clinics\Clinic\Room\StoreRoomRequest;
 use App\Models\Clinics\Clinic\Room\Room;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class RoomController extends Controller
 {
-    use AuthorizesRequests;
-
     public function __construct()
     {
         // Aplica a Policy automaticamente
@@ -24,8 +20,7 @@ class RoomController extends Controller
      */
     public function index()
     {
-        $rooms = Room::where('clinic_id', Auth::user()->clinic_id)
-            ->orderBy('name')
+        $rooms = Room::orderBy('name')
             ->get();
 
         return view('clinic.rooms.index', compact('rooms'));
@@ -44,13 +39,11 @@ class RoomController extends Controller
      */
     public function store(StoreRoomRequest $request)
     {
-        $data = $request->validated();
-        $data['clinic_id'] = Auth::user()->clinic_id;
+        Room::create($request->validated());
 
-        Room::create($data);
+        Alert::success('Sucesso', 'Sala cadastrada com sucesso.');
 
-        return redirect()->route('rooms.index')
-            ->with('success', 'Sala cadastrada com sucesso.');
+        return redirect()->route('rooms.index');
     }
 
     /**
@@ -68,8 +61,9 @@ class RoomController extends Controller
     {
         $room->update($request->validated());
 
-        return redirect()->route('rooms.index')
-            ->with('success', 'Sala atualizada com sucesso.');
+        Alert::success('Sucesso', 'Sala atualizada com sucesso.');
+
+        return redirect()->route('rooms.index');
     }
 
     /**
@@ -80,7 +74,8 @@ class RoomController extends Controller
         // Nota: Em sistemas de agendamento, o Soft Delete é essencial para não quebrar o histórico.
         $room->delete();
 
-        return redirect()->route('rooms.index')
-            ->with('success', 'Sala removida com sucesso.');
+        Alert::success('Sucesso', 'Sala removida com sucesso.');
+
+        return redirect()->route('rooms.index');
     }
 }

@@ -14,6 +14,10 @@ class SubscriptionController extends Controller
      */
     public function index()
     {
+        if (Auth::user()->hasRole('super-admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+
         $clinic = Auth::user()->clinic;
         $plans = SubscriptionPlan::where('is_active', true)->get();
         $currentSubscription = $clinic->subscription('default');
@@ -26,6 +30,10 @@ class SubscriptionController extends Controller
      */
     public function checkout(Request $request)
     {
+        if (Auth::user()->hasRole('super-admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+
         $request->validate([
             'plan_id' => 'required|exists:subscription_plans,stripe_plan_id',
         ]);
@@ -33,8 +41,8 @@ class SubscriptionController extends Controller
         return Auth::user()->clinic
             ->newSubscription('default', $request->plan_id)
             ->checkout([
-                'success_url' => route('subscription.index') . '?success=true',
-                'cancel_url' => route('subscription.index') . '?canceled=true',
+                'success_url' => route('subscription.index').'?success=true',
+                'cancel_url' => route('subscription.index').'?canceled=true',
             ]);
     }
 
@@ -43,6 +51,10 @@ class SubscriptionController extends Controller
      */
     public function billingPortal(Request $request)
     {
+        if ($request->user()->hasRole('super-admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+
         return $request->user()->clinic->redirectToBillingPortal(
             route('subscription.index')
         );

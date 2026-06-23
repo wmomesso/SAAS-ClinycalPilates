@@ -3,6 +3,7 @@
 namespace App\Models\Clinics\Clinic\Room;
 
 use App\Models\Clinics\Clinic\Clinic;
+use App\Models\Traits\BelongsToClinic;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Room extends Model
 {
-    use HasFactory;
+    use BelongsToClinic, HasFactory;
 
     protected $fillable = [
         'clinic_id',

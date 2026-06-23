@@ -6,14 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Clinics\Clinic\Finance\StoreServicePackageRequest;
 use App\Models\Clinics\Clinic\Finance\ServicePackage;
 use App\Models\Clinics\Clinic\Services\ServiceType;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ServicePackageController extends Controller
 {
-    use AuthorizesRequests;
-
     public function __construct()
     {
         // Assume-se a existência de uma ServicePackagePolicy registrada
@@ -25,8 +20,7 @@ class ServicePackageController extends Controller
      */
     public function index()
     {
-        $packages = ServicePackage::where('clinic_id', Auth::user()->clinic_id)
-            ->with('serviceType')
+        $packages = ServicePackage::with('serviceType')
             ->orderBy('name')
             ->get();
 
@@ -38,8 +32,7 @@ class ServicePackageController extends Controller
      */
     public function create()
     {
-        $serviceTypes = ServiceType::where('clinic_id', Auth::user()->clinic_id)
-            ->where('is_active', true)
+        $serviceTypes = ServiceType::where('is_active', true)
             ->get();
 
         return view('clinic.finance.packages.create', compact('serviceTypes'));
@@ -50,10 +43,7 @@ class ServicePackageController extends Controller
      */
     public function store(StoreServicePackageRequest $request)
     {
-        $data = $request->validated();
-        $data['clinic_id'] = Auth::user()->clinic_id;
-
-        ServicePackage::create($data);
+        ServicePackage::create($request->validated());
 
         return redirect()->route('service-packages.index')
             ->with('success', 'Pacote de serviço criado com sucesso.');
@@ -64,11 +54,10 @@ class ServicePackageController extends Controller
      */
     public function edit(ServicePackage $servicePackage)
     {
-        $serviceTypes = ServiceType::where('clinic_id', Auth::user()->clinic_id)
-            ->where('is_active', true)
+        $serviceTypes = ServiceType::where('is_active', true)
             ->get();
 
-        return view('clinic.finance.packages.edit', compact('servicePackage', 'serviceTypes'));
+        return view('clinic.finance.packages.edit', compact('servicePackage', $serviceTypes));
     }
 
     /**

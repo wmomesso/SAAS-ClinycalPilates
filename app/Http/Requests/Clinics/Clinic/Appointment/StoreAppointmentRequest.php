@@ -20,38 +20,31 @@ class StoreAppointmentRequest extends FormRequest
      */
     public function rules(): array
     {
-        $clinicId = auth()->user()->clinic_id;
-
         return [
             'patient_id' => [
                 'required',
-                Rule::exists('patients', 'id')->where(function ($query) use ($clinicId) {
-                    $query->where('clinic_id', $clinicId);
-                }),
+                Rule::exists('patients', 'id'),
             ],
             'professional_id' => [
                 'required',
-                Rule::exists('users', 'id')->where(function ($query) use ($clinicId) {
-                    $query->where('clinic_id', $clinicId);
+                Rule::exists('users', 'id')->where(function ($query) {
+                    $query->where('clinic_id', auth()->user()->clinic_id);
                 }),
             ],
             'room_id' => [
                 'nullable',
-                Rule::exists('rooms', 'id')->where(function ($query) use ($clinicId) {
-                    $query->where('clinic_id', $clinicId);
-                }),
+                Rule::exists('rooms', 'id'),
             ],
             'service_type_id' => [
                 'required',
-                Rule::exists('service_types', 'id')->where(function ($query) use ($clinicId) {
-                    $query->where('clinic_id', $clinicId);
-                }),
+                Rule::exists('service_types', 'id'),
             ],
-            'start_time' => ['required', 'date', 'after:today'],
+            'start_time' => ['required', 'date'],
             'end_time' => ['nullable', 'date', 'after:start_time'],
             'status' => ['nullable', 'string', 'in:scheduled,confirmed,completed,canceled,no_show'],
             'notes' => ['nullable', 'string', 'max:1000'],
-            'recurrence_rule' => ['nullable', 'string'],
+            'recurrence_rule' => ['nullable', 'string', 'in:none,daily,weekly,2x_weekly,3x_weekly'],
+            'recurrence_until' => ['nullable', 'date', 'after:start_time', 'required_if:recurrence_rule,daily,weekly,2x_weekly,3x_weekly'],
         ];
     }
 

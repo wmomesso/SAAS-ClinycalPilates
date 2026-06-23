@@ -7,14 +7,10 @@ use App\Http\Requests\Clinics\Clinic\Finance\StoreInvoiceRequest;
 use App\Models\Clinics\Clinic\Finance\Invoice;
 use App\Models\Clinics\Clinic\Finance\Transaction;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class InvoiceController extends Controller
 {
-    use AuthorizesRequests;
-
     public function __construct()
     {
         $this->authorizeResource(Invoice::class, 'invoice');
@@ -25,8 +21,7 @@ class InvoiceController extends Controller
      */
     public function index()
     {
-        $invoices = Invoice::where('clinic_id', Auth::user()->clinic_id)
-            ->with('patient')
+        $invoices = Invoice::with('patient')
             ->orderBy('due_date', 'desc')
             ->paginate(15);
 
@@ -39,8 +34,7 @@ class InvoiceController extends Controller
     public function store(StoreInvoiceRequest $request)
     {
         $data = $request->validated();
-        $data['clinic_id'] = Auth::user()->clinic_id;
-        $data['invoice_number'] = 'INV-' . strtoupper(uniqid());
+        $data['invoice_number'] = 'INV-'.strtoupper(uniqid());
 
         Invoice::create($data);
 
@@ -54,6 +48,7 @@ class InvoiceController extends Controller
     public function show(Invoice $invoice)
     {
         $invoice->load(['patient', 'items', 'transactions']);
+
         return view('clinic.finance.invoices.show', compact('invoice'));
     }
 
@@ -67,7 +62,7 @@ class InvoiceController extends Controller
         $request->validate([
             'amount' => 'required|numeric|min:0.01',
             'payment_method' => 'required|string',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string',
         ]);
 
         DB::transaction(function () use ($request, $invoice) {
@@ -87,7 +82,7 @@ class InvoiceController extends Controller
             if ($invoice->amount_paid >= $invoice->total_amount) {
                 $invoice->update([
                     'status' => 'paid',
-                    'paid_at' => now()
+                    'paid_at' => now(),
                 ]);
             }
         });

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Clinics\Clinic\Patient;
 
+use App\Rules\Cpf;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,12 +21,13 @@ class StorePatientRequest extends FormRequest
             'document_cpf' => [
                 'nullable',
                 'string',
-                Rule::unique('patients')->ignore($this->patient)->where(fn ($q) => $q->where('clinic_id', auth()->user()->clinic_id))
+                new Cpf,
+                Rule::unique('patients')->ignore($this->patient),
             ],
             'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'max:50'],
             'emergency_contact_name' => ['nullable', 'string', 'max:255'],
-            'emergency_contact_phone' => ['nullable', 'string', 'max:20'],
+            'emergency_contact_phone' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'array'],
             'medical_history' => ['nullable', 'string'],
         ];

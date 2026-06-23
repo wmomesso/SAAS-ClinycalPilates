@@ -68,9 +68,36 @@
 
             <div class="w-full p-4 text-center bg-white border border-gray-200 rounded-lg shadow-sm sm:p-8 dark:bg-gray-800 dark:border-gray-700">
                 <h5 class="mb-2 text-3xl font-bold text-gray-900 dark:text-white">{{ $user->name }}</h5>
-                <p class="mb-5 text-base text-gray-500 sm:text-lg dark:text-gray-400">{{ $user->getRoleNames()->first() }}</p>
-                <div class="items-center justify-center space-y-4 sm:flex sm:space-y-0 sm:space-x-4 rtl:space-x-reverse">
-                    ----
+                <p class="mb-5 text-base text-gray-500 sm:text-lg dark:text-gray-400">
+                    Email: {{ $user->email }}<br>
+                    Perfil: {{ $user->getRoleNames()->implode(', ') ?: 'Sem perfil atribuído' }}
+                    @if($user->hasRole('profissional') && $user->calendar_color)
+                        <br>
+                        <span class="inline-flex items-center mt-2">
+                            Cor na Agenda:
+                            <span class="ml-2 w-6 h-6 rounded border border-gray-300 dark:border-gray-600 shadow-sm" style="background-color: {{ $user->calendar_color }}"></span>
+                            <span class="ml-2">{{ $user->calendar_color }}</span>
+                        </span>
+                    @endif
+                </p>
+
+                <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <h4 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                        Permissões Detalhadas
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-left">
+                        @foreach($user->getAllPermissions()->sortBy('name') as $permission)
+                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                <svg class="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                {{ $permission->name }}
+                            </div>
+                        @endforeach
+                    </div>
+                    @if($user->getAllPermissions()->isEmpty())
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Nenhuma permissão específica atribuída.</p>
+                    @endif
                 </div>
             </div>
 

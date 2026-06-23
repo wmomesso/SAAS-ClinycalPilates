@@ -4,14 +4,13 @@ namespace App\Policies\Clinics\Clinic\Appointment;
 
 use App\Models\Clinics\Clinic\Appointment\Appointment;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class AppointmentPolicy
 {
     /**
      * O Super Admin pode ignorar as restrições de tenant.
      */
-    public function before(User $user, string $ability): bool|null
+    public function before(User $user, string $ability): ?bool
     {
         if ($user->hasRole('super-admin')) {
             return true;
@@ -42,7 +41,7 @@ class AppointmentPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('gerenciar-todos-agendamentos') || $user->hasRole('profissional') || $user->hasRole('recepcionista');
+        return $user->can('gerenciar-agenda-profissionais') || $user->hasRole('profissional') || $user->hasRole('recepcionista');
     }
 
     /**

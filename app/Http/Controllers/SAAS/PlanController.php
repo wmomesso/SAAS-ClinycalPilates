@@ -5,13 +5,9 @@ namespace App\Http\Controllers\SAAS;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SAAS\Plan\StorePlanRequest;
 use App\Models\SAAS\SubscriptionPlan;
-use Illuminate\Http\Request;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class PlanController extends Controller
 {
-    use AuthorizesRequests;
-
     public function __construct()
     {
         // Apenas Super Admin pode gerenciar planos globais
@@ -21,7 +17,13 @@ class PlanController extends Controller
     public function index()
     {
         $plans = SubscriptionPlan::all();
+
         return view('admin.plans.index', compact('plans'));
+    }
+
+    public function create()
+    {
+        return view('admin.plans.create');
     }
 
     public function store(StorePlanRequest $request)
@@ -30,6 +32,11 @@ class PlanController extends Controller
 
         return redirect()->route('plans.index')
             ->with('success', 'Plano SAAS criado com sucesso.');
+    }
+
+    public function edit(SubscriptionPlan $plan)
+    {
+        return view('admin.plans.edit', compact('plan'));
     }
 
     public function update(StorePlanRequest $request, SubscriptionPlan $plan)
@@ -43,6 +50,7 @@ class PlanController extends Controller
     public function destroy(SubscriptionPlan $plan)
     {
         $plan->delete();
+
         return redirect()->route('plans.index')
             ->with('success', 'Plano removido.');
     }

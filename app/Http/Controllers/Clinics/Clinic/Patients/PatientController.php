@@ -5,14 +5,9 @@ namespace App\Http\Controllers\Clinics\Clinic\Patients;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Clinics\Clinic\Patient\StorePatientRequest;
 use App\Models\Clinics\Clinic\Patient\Patient;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class PatientController extends Controller
 {
-    use AuthorizesRequests;
-
     public function __construct()
     {
         // Aplica a Policy automaticamente para os métodos do resource
@@ -24,8 +19,7 @@ class PatientController extends Controller
      */
     public function index()
     {
-        $patients = Patient::where('clinic_id', Auth::user()->clinic_id)
-            ->orderBy('full_name')
+        $patients = Patient::orderBy('full_name')
             ->paginate(15);
 
         return view('patients.index', compact('patients'));
@@ -44,10 +38,7 @@ class PatientController extends Controller
      */
     public function store(StorePatientRequest $request)
     {
-        $data = $request->validated();
-        $data['clinic_id'] = Auth::user()->clinic_id;
-
-        Patient::create($data);
+        Patient::create($request->validated());
 
         return redirect()->route('patients.index')
             ->with('success', 'Paciente registrado com sucesso.');

@@ -4,7 +4,6 @@ namespace App\Policies\Clinics\Clinic;
 
 use App\Models\Clinics\Clinic\Clinic;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ClinicPolicy
 {
@@ -12,7 +11,7 @@ class ClinicPolicy
      * O método 'before' é executado antes de qualquer outra verificação.
      * Se retornar true, a autorização é concedida imediatamente.
      */
-    public function before(User $user, string $ability): bool|null
+    public function before(User $user, string $ability): ?bool
     {
         if ($user->hasRole('super-admin')) {
             return true;
@@ -53,8 +52,10 @@ class ClinicPolicy
      */
     public function update(User $user, Clinic $clinic): bool
     {
-        // O usuário pode atualizar se ele for o dono da clínica (owner_id).
-        return $user->id === $clinic->owner_id;
+        // O usuário pode atualizar se ele for o dono da clínica (owner_id)
+        // OU se ele tiver a role 'admin-clinica' e pertencer à clínica.
+        return $user->id === $clinic->owner_id ||
+               ($user->hasRole('admin-clinica') && $user->clinic_id === $clinic->id);
     }
 
     /**

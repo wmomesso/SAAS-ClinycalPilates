@@ -5,13 +5,14 @@ use App\Http\Controllers\Clinics\Clinic\ClinicController;
 use App\Http\Controllers\Clinics\Clinic\Finance\InvoiceController;
 use App\Http\Controllers\Clinics\Clinic\Finance\ServicePackageController;
 use App\Http\Controllers\Clinics\Clinic\Patients\PatientController;
+use App\Http\Controllers\Clinics\Clinic\RolePermissionController;
 use App\Http\Controllers\Clinics\Clinic\Rooms\RoomController;
 use App\Http\Controllers\Clinics\Clinic\Services\ServiceTypeController;
 use App\Http\Controllers\Clinics\Clinic\Subscriptions\SubscriptionController;
+use App\Http\Controllers\Clinics\RolesPermissions\ClinicUserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SAAS\PlanController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Clinics\RolesPermissions\ClinicUserController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -31,10 +32,21 @@ Route::middleware('auth')->group(function () {
     Route::resource('clinic-users', ClinicUserController::class);
     Route::get('clinic-settings', [ClinicController::class, 'settings'])->name('clinic.settings');
     Route::put('clinic-settings', [ClinicController::class, 'update'])->name('clinic.update');
+    Route::get('roles/{role}/permissions', [RolePermissionController::class, 'index'])->name('roles.permissions.index');
+    Route::post('roles/{role}/permissions', [RolePermissionController::class, 'update'])->name('roles.permissions.update');
 
     // Sprint 2: Gestão de Pacientes
     // O resource cria automaticamente rotas para index, create, store, show, edit, update e destroy
     Route::resource('patients', PatientController::class);
+    Route::prefix('patients/{patient}')->name('patients.')->group(function () {
+        Route::post('evolutions', [\App\Http\Controllers\Clinics\Clinic\Patients\EvolutionController::class, 'store'])->name('evolutions.store');
+        Route::post('documents', [\App\Http\Controllers\Clinics\Clinic\Patients\PatientDocumentController::class, 'store'])->name('documents.store');
+        Route::post('anamneses', [\App\Http\Controllers\Clinics\Clinic\Patients\AnamnesisController::class, 'store'])->name('anamneses.store');
+        Route::get('anamneses/compare', [\App\Http\Controllers\Clinics\Clinic\Patients\AnamnesisController::class, 'compare'])->name('anamneses.compare');
+    });
+    Route::delete('evolutions/{evolution}', [\App\Http\Controllers\Clinics\Clinic\Patients\EvolutionController::class, 'destroy'])->name('evolutions.destroy');
+    Route::delete('documents/{document}', [\App\Http\Controllers\Clinics\Clinic\Patients\PatientDocumentController::class, 'destroy'])->name('documents.destroy');
+    Route::get('anamneses/{anamnesis}', [\App\Http\Controllers\Clinics\Clinic\Patients\AnamnesisController::class, 'show'])->name('anamneses.show');
 
     // --- Sprint 3: Gestão de Salas ---
     // Namespace: App\Http\Controllers\Clinics\Clinic\Rooms
@@ -57,8 +69,11 @@ Route::middleware('auth')->group(function () {
     Route::get('subscription/billing-portal', [SubscriptionController::class, 'billingPortal'])->name('subscription.billing');
 
     // Rotas de Administração Global (Super Admin)
-    Route::resource('plans', PlanController::class);
-    Route::get('clinics', [ClinicController::class, 'index'])->name('clinics.index');
+    Route::middleware(['role:super-admin'])->prefix('admin')->group(function () {
+        Route::get('/dashboard', \App\Http\Controllers\SAAS\AdminDashboardController::class)->name('admin.dashboard');
+        Route::resource('plans', PlanController::class);
+        Route::get('clinics', [ClinicController::class, 'index'])->name('admin.clinics.index');
+    });
 });
 
 require __DIR__.'/auth.php';

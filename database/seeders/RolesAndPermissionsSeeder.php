@@ -3,9 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Spatie\Permission\Models\Role;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
@@ -18,51 +17,108 @@ class RolesAndPermissionsSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         // --- DEFINIÇÃO DAS PERMISSÕES ---
-        // (Exemplos baseados no plano. Adicionar todas as permissões necessárias)
-        Permission::create(['name' => 'gerenciar-clinicas']); // Para super-admin
+        $permissions = [
+            'gerenciar-clinicas', // Para super-admin
 
-        Permission::create(['name' => 'gerenciar-profissionais']);
-        Permission::create(['name' => 'gerenciar-salas']);
-        Permission::create(['name' => 'ver-todos-agendamentos']);
-        Permission::create(['name' => 'gerenciar-pacientes']);
-        Permission::create(['name' => 'ver-relatorios-financeiros']);
-        Permission::create(['name' => 'gerenciar-assinatura-saas']);
+            // Salas
+            'gerenciar-salas',
+            'visualizar-salas',
 
-        Permission::create(['name' => 'ver-agenda-propria']);
-        Permission::create(['name' => 'gerenciar-agendamentos-proprios']);
-        Permission::create(['name' => 'registrar-evolucao-paciente']);
+            // Agenda Profissionais
+            'gerenciar-agenda-profissionais',
+            'visualizar-agenda-profissionais',
+
+            // Lista de Compras
+            'gerenciar-lista-compras-clinica',
+            'visualizar-lista-compras-clinica',
+
+            // Convênios
+            'gerenciar-convenios',
+            'visualizar-convenios',
+
+            // Pacientes
+            'gerenciar-pacientes',
+            'visualizar-pacientes',
+
+            // Pagamentos
+            'gerenciar-pagamentos',
+            'visualizar-pagamentos',
+
+            // Assinatura SAAS
+            'gerenciar-assinatura-saas',
+            'visualizar-assinatura-saas',
+
+            // Financeiro
+            'gerenciar-financeiro',
+            'visualizar-financeiro',
+
+            // Fluxo de Caixa
+            'gerenciar-fluxo-caixa',
+            'visualizar-fluxo-caixa',
+
+            // Específicas de profissionais (mantidas ou adaptadas)
+            'ver-agenda-propria',
+            'gerenciar-agendamentos-proprios',
+            'registrar-evolucao-paciente',
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
 
         // --- DEFINIÇÃO DOS PERFIS (ROLES) E ATRIBUIÇÃO DE PERMISSÕES ---
 
         // Perfil Super Admin
-        $superAdminRole = Role::create(['name' => 'super-admin']);
-        $superAdminRole->givePermissionTo(Permission::all()); // O super-admin pode tudo
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
+        $superAdminRole->syncPermissions(Permission::all());
 
         // Perfil Admin da Clínica
-        $adminClinicaRole = Role::create(['name' => 'admin-clinica']);
-        $adminClinicaRole->givePermissionTo([
-            'gerenciar-profissionais',
+        $adminClinicaRole = Role::firstOrCreate(['name' => 'admin-clinica']);
+        $adminClinicaRole->syncPermissions([
             'gerenciar-salas',
-            'ver-todos-agendamentos',
+            'visualizar-salas',
+            'gerenciar-agenda-profissionais',
+            'visualizar-agenda-profissionais',
+            'gerenciar-lista-compras-clinica',
+            'visualizar-lista-compras-clinica',
+            'gerenciar-convenios',
+            'visualizar-convenios',
             'gerenciar-pacientes',
-            'ver-relatorios-financeiros',
+            'visualizar-pacientes',
+            'gerenciar-pagamentos',
+            'visualizar-pagamentos',
             'gerenciar-assinatura-saas',
+            'visualizar-assinatura-saas',
+            'gerenciar-financeiro',
+            'visualizar-financeiro',
+            'gerenciar-fluxo-caixa',
+            'visualizar-fluxo-caixa',
         ]);
 
         // Perfil Profissional
-        $profissionalRole = Role::create(['name' => 'profissional']);
-        $profissionalRole->givePermissionTo([
+        $profissionalRole = Role::firstOrCreate(['name' => 'profissional']);
+        $profissionalRole->syncPermissions([
+            'visualizar-agenda-profissionais',
+            'visualizar-pacientes',
+            'registrar-evolucao-paciente',
             'ver-agenda-propria',
             'gerenciar-agendamentos-proprios',
-            'registrar-evolucao-paciente',
         ]);
 
         // Perfil Recepcionista
-        $recepcionistaRole = Role::create(['name' => 'recepcionista']);
-        // Adicionar permissões específicas da recepcionista aqui
+        $recepcionistaRole = Role::firstOrCreate(['name' => 'recepcionista']);
+        $recepcionistaRole->syncPermissions([
+            'visualizar-salas',
+            'gerenciar-agenda-profissionais',
+            'visualizar-agenda-profissionais',
+            'visualizar-pacientes',
+            'gerenciar-pacientes',
+            'visualizar-pagamentos',
+            'gerenciar-pagamentos',
+        ]);
 
         // Perfil Paciente
-        $pacienteRole = Role::create(['name' => 'paciente']);
-        // Adicionar permissões específicas do paciente aqui
+        $pacienteRole = Role::firstOrCreate(['name' => 'paciente']);
+        // Pacientes podem ter permissões limitadas no futuro para ver seus próprios dados
     }
 }

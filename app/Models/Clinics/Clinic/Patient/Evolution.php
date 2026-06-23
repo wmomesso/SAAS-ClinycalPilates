@@ -18,6 +18,8 @@ class Evolution extends Model
     protected $fillable = [
         'patient_id',
         'professional_id',
+        'title',
+        'type',
         'description',
     ];
 

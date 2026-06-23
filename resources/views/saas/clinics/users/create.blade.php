@@ -109,7 +109,7 @@
                             Acesso</label>
                         <select id="role" name="role"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                required>
+                                required onchange="toggleColorPicker(this.value)">
                             <option selected disabled value="">Selecione um perfil</option>
                             {{-- O loop de roles virá aqui. Exemplo: --}}
                             @foreach($roles as $role)
@@ -120,7 +120,40 @@
                         <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    {{-- Campo Cor da Agenda (Apenas para Profissionais) --}}
+                    <div id="calendar_color_container" class="hidden">
+                        <label for="calendar_color" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cor na Agenda</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="color" name="calendar_color" id="calendar_color"
+                                   class="p-1 h-10 w-20 block bg-white border border-gray-300 rounded-lg cursor-pointer disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700"
+                                   value="{{ old('calendar_color', '#3b82f6') }}">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Selecione uma cor para identificar este profissional na agenda.</span>
+                        </div>
+                        @error('calendar_color')
+                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
+
+                <script>
+                    function toggleColorPicker(role) {
+                        const container = document.getElementById('calendar_color_container');
+                        if (role === 'profissional') {
+                            container.classList.remove('hidden');
+                        } else {
+                            container.classList.add('hidden');
+                        }
+                    }
+
+                    // Run on page load if role is already selected
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const roleSelect = document.getElementById('role');
+                        if (roleSelect.value) {
+                            toggleColorPicker(roleSelect.value);
+                        }
+                    });
+                </script>
 
                 {{-- Botão de Submissão --}}
                 <div class="mt-6 flex justify-end">
