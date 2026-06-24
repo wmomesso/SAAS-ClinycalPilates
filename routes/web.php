@@ -7,13 +7,13 @@ use App\Http\Controllers\Clinics\Clinic\Finance\ServicePackageController;
 use App\Http\Controllers\Clinics\Clinic\HealthInsurance\HealthInsuranceController;
 use App\Http\Controllers\Clinics\Clinic\HealthInsurance\InsuranceGuideController;
 use App\Http\Controllers\Clinics\Clinic\Patients\PatientController;
-use App\Http\Controllers\Clinics\Finance\BankAccountController;
-use App\Http\Controllers\Clinics\Finance\PayableController;
-use App\Http\Controllers\Clinics\Finance\ReceivableController;
 use App\Http\Controllers\Clinics\Clinic\RolePermissionController;
 use App\Http\Controllers\Clinics\Clinic\Rooms\RoomController;
 use App\Http\Controllers\Clinics\Clinic\Services\ServiceTypeController;
 use App\Http\Controllers\Clinics\Clinic\Subscriptions\SubscriptionController;
+use App\Http\Controllers\Clinics\Finance\BankAccountController;
+use App\Http\Controllers\Clinics\Finance\PayableController;
+use App\Http\Controllers\Clinics\Finance\ReceivableController;
 use App\Http\Controllers\Clinics\RolesPermissions\ClinicUserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SAAS\PlanController;
@@ -23,9 +23,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('saas.dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', \App\Http\Controllers\Clinics\Clinic\DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     // Perfil do Usuário
@@ -42,6 +40,7 @@ Route::middleware('auth')->group(function () {
 
     // Sprint 2: Gestão de Pacientes
     // O resource cria automaticamente rotas para index, create, store, show, edit, update e destroy
+    Route::get('patients/search', [PatientController::class, 'search'])->name('patients.search');
     Route::resource('patients', PatientController::class);
     Route::prefix('patients/{patient}')->name('patients.')->group(function () {
         Route::post('evolutions', [\App\Http\Controllers\Clinics\Clinic\Patients\EvolutionController::class, 'store'])->name('evolutions.store');

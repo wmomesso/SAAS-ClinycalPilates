@@ -89,12 +89,11 @@ class AppointmentController extends Controller
      */
     public function create()
     {
-        $patients = \App\Models\Clinics\Clinic\Patient\Patient::orderBy('full_name')->get();
         $professionals = User::role('profissional')->get();
         $rooms = Room::where('is_active', true)->get();
         $serviceTypes = ServiceType::all();
 
-        return view('clinic.appointments.create', compact('patients', 'professionals', 'rooms', 'serviceTypes'));
+        return view('clinic.appointments.create', compact('professionals', 'rooms', 'serviceTypes'));
     }
 
     /**
@@ -114,11 +113,12 @@ class AppointmentController extends Controller
 
             // Verificação de conflito de horário para o primeiro agendamento
             if ($this->hasConflict($data)) {
+                $message = 'Conflito de horário detectado para o profissional, sala ou paciente.';
                 if ($request->wantsJson()) {
-                    return response()->json(['message' => 'Já existe um agendamento para este profissional ou sala neste horário.'], 422);
+                    return response()->json(['message' => $message], 422);
                 }
 
-                return back()->withErrors(['start_time' => 'Já existe um agendamento para este profissional ou sala neste horário.'])
+                return back()->withErrors(['start_time' => $message])
                     ->withInput();
             }
 
@@ -200,23 +200,65 @@ class AppointmentController extends Controller
 
     protected function hasConflict(array $data, $excludeId = null): bool
     {
-        $query = Appointment::where(function ($query) use ($data) {
-            $query->where('professional_id', $data['professional_id'])
-                ->orWhere('room_id', $data['room_id']);
-        })
+        // 1. Verificação de conflito para o PROFISSIONAL
+        // Regra: Um profissional pode atender múltiplos pacientes se estiverem na MESMA SALA no MESMO HORÁRIO.
+        // Se houver um agendamento do profissional em uma SALA DIFERENTE no mesmo horário, há conflito.
+        $professionalConflict = Appointment::where('professional_id', $data['professional_id'])
+            ->where('room_id', '!=', $data['room_id'])
             ->where(function ($query) use ($data) {
-                $query->where(function ($q) use ($data) {
-                    $q->where('start_time', '<', $data['end_time'])
-                        ->where('end_time', '>', $data['start_time']);
-                });
+                $query->where('start_time', '<', $data['end_time'])
+                    ->where('end_time', '>', $data['start_time']);
             })
             ->whereIn('status', ['scheduled', 'confirmed', 'completed']);
 
         if ($excludeId) {
-            $query->where('id', '!=', $excludeId);
+            $professionalConflict->where('id', '!=', $excludeId);
         }
 
-        return $query->exists();
+        if ($professionalConflict->exists()) {
+            return true;
+        }
+
+        // 2. Verificação de conflito para a SALA
+        // Regra: A sala não pode exceder sua capacidade de alunos simultâneos.
+        $room = Room::find($data['room_id']);
+        if ($room) {
+            $capacity = $room->capacity ?? 1;
+
+            $roomAppointmentsCount = Appointment::where('room_id', $data['room_id'])
+                ->where(function ($query) use ($data) {
+                    $query->where('start_time', '<', $data['end_time'])
+                        ->where('end_time', '>', $data['start_time']);
+                })
+                ->whereIn('status', ['scheduled', 'confirmed', 'completed']);
+
+            if ($excludeId) {
+                $roomAppointmentsCount->where('id', '!=', $excludeId);
+            }
+
+            if ($roomAppointmentsCount->count() >= $capacity) {
+                return true;
+            }
+        }
+
+        // 3. Verificação de conflito para o PACIENTE
+        // Regra: Um paciente não pode ter dois agendamentos sobrepostos.
+        $patientConflict = Appointment::where('patient_id', $data['patient_id'])
+            ->where(function ($query) use ($data) {
+                $query->where('start_time', '<', $data['end_time'])
+                    ->where('end_time', '>', $data['start_time']);
+            })
+            ->whereIn('status', ['scheduled', 'confirmed', 'completed']);
+
+        if ($excludeId) {
+            $patientConflict->where('id', '!=', $excludeId);
+        }
+
+        if ($patientConflict->exists()) {
+            return true;
+        }
+
+        return false;
     }
 
     protected function generateRecurrences(Appointment $mainAppointment, array $data): void

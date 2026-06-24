@@ -39,7 +39,7 @@ class StoreAppointmentRequest extends FormRequest
                 'required',
                 Rule::exists('service_types', 'id'),
             ],
-            'start_time' => ['required', 'date'],
+            'start_time' => ['required', 'date', 'after_or_equal:today'],
             'end_time' => ['nullable', 'date', 'after:start_time'],
             'status' => ['nullable', 'string', 'in:scheduled,confirmed,completed,canceled,no_show'],
             'notes' => ['nullable', 'string', 'max:1000'],

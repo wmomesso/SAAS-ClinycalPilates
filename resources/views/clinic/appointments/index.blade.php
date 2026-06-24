@@ -383,22 +383,20 @@
 
                 const content = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2">
+                    <div class="md:col-span-2 relative">
                         <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Paciente <span class="text-red-500">*</span></label>
-                        <select name="patient_id" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
-                            <option value="">Selecione um paciente</option>
-                            @foreach($patients ?? [] as $patient)
-                <option value="{{ $patient->id }}">{{ $patient->full_name }}</option>
-                            @endforeach
-                </select>
-            </div>
+                        <input type="text" id="patient_search" placeholder="Digite pelo menos 3 caracteres para buscar..." autocomplete="off"
+                               class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                        <input type="hidden" name="patient_id" id="selected_patient_id" required>
+                        <div id="patient_results" class="hidden absolute z-[80] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-48 overflow-y-auto"></div>
+                    </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Início <span class="text-red-500">*</span></label>
-                <input type="datetime-local" name="start_time" value="${startVal}" step="60" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                <input type="datetime-local" name="start_time" value="${startVal}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Fim <span class="text-red-500">*</span></label>
-                        <input type="datetime-local" name="end_time" value="${endVal}" step="60" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                        <input type="datetime-local" name="end_time" value="${endVal}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Profissional <span class="text-red-500">*</span></label>
@@ -428,6 +426,9 @@
 `;
                 document.getElementById('modal-form-content').innerHTML = content;
                 if (modal) modal.show();
+
+                // Inicializar busca de pacientes
+                initPatientSearch();
             }
 
             function openEditAppointmentModal(event) {
@@ -464,11 +465,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Novo Horário Início</label>
-                            <input type="datetime-local" name="start_time" value="${startStr}" step="60" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                            <input type="datetime-local" name="start_time" value="${startStr}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Novo Horário Fim</label>
-                            <input type="datetime-local" name="end_time" value="${endStr}" step="60" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                            <input type="datetime-local" name="end_time" value="${endStr}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
                         </div>
                     </div>
                     <div>
@@ -533,6 +534,58 @@
 
             function closeModal() {
                 if (modal) modal.hide();
+            }
+
+            function initPatientSearch() {
+                const searchInput = document.getElementById('patient_search');
+                const resultsDiv = document.getElementById('patient_results');
+                const patientIdInput = document.getElementById('selected_patient_id');
+                let timeout = null;
+
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(timeout);
+                    const query = this.value;
+
+                    if (query.length < 3) {
+                        resultsDiv.innerHTML = '';
+                        resultsDiv.classList.add('hidden');
+                        return;
+                    }
+
+                    timeout = setTimeout(() => {
+                        fetch(`{{ route('patients.search') }}?q=${query}`, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            resultsDiv.innerHTML = '';
+                            if (data.length > 0) {
+                                data.forEach(patient => {
+                                    const div = document.createElement('div');
+                                    div.className = 'p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 text-sm dark:text-gray-300';
+                                    div.textContent = patient.full_name;
+                                    div.onclick = () => {
+                                        searchInput.value = patient.full_name;
+                                        patientIdInput.value = patient.id;
+                                        resultsDiv.classList.add('hidden');
+                                    };
+                                    resultsDiv.appendChild(div);
+                                });
+                                resultsDiv.classList.remove('hidden');
+                            } else {
+                                resultsDiv.innerHTML = '<div class="p-3 text-sm text-gray-500 italic">Nenhum paciente encontrado</div>';
+                                resultsDiv.classList.remove('hidden');
+                            }
+                        });
+                    }, 300);
+                });
+
+                // Fechar resultados ao clicar fora
+                document.addEventListener('click', function(e) {
+                    if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+                        resultsDiv.classList.add('hidden');
+                    }
+                });
             }
         </script>
 

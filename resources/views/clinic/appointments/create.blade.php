@@ -1,7 +1,3 @@
-<div>
-    <!-- Act only according to that maxim whereby you can, at the same time, will that it should become a universal law. - Immanuel Kant -->
-</div>
-
 @extends('layouts.saas')
 
 @section('title', 'Novo Agendamento')
@@ -101,14 +97,14 @@
                     {{-- Data e Hora de Início --}}
                     <div>
                         <label for="start_time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Início</label>
-                        <input type="datetime-local" name="start_time" id="start_time" required value="{{ old('start_time') }}" class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary-500 rounded-xl shadow-sm">
+                        <input type="datetime-local" name="start_time" id="start_time" step="900" required value="{{ old('start_time') }}" class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary-500 rounded-xl shadow-sm">
                         @error('start_time') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Data e Hora de Fim (Opcional) --}}
                     <div>
                         <label for="end_time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fim (Opcional)</label>
-                        <input type="datetime-local" name="end_time" id="end_time" value="{{ old('end_time') }}" class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary-500 rounded-xl shadow-sm">
+                        <input type="datetime-local" name="end_time" id="end_time" step="900" value="{{ old('end_time') }}" class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary-500 rounded-xl shadow-sm">
                         <p class="mt-1 text-[10px] text-gray-500">Se deixado em branco, será calculado com base na duração do serviço.</p>
                         @error('end_time') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                     </div>

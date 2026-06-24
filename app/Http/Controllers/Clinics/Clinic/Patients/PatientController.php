@@ -26,6 +26,22 @@ class PatientController extends Controller
     }
 
     /**
+     * Busca pacientes para autocomplete.
+     */
+    public function search(\Illuminate\Http\Request $request)
+    {
+        $search = $request->get('q');
+
+        $patients = Patient::query()
+            ->where('full_name', 'LIKE', "%{$search}%")
+            ->orderBy('full_name')
+            ->limit(10)
+            ->get(['id', 'full_name']);
+
+        return response()->json($patients);
+    }
+
+    /**
      * Exibe o formulário de criação.
      */
     public function create()
