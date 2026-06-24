@@ -79,8 +79,11 @@
 
                     <div id="user-dropdown-nav" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hidden z-50">
                         <div class="py-1">
-                            <x-dropdown-link :href="route('profile.edit')">
-                                {{ __('Profile') }}
+                            <x-dropdown-link :href="route('profile.edit')" class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                {{ __('Perfil') }}
                             </x-dropdown-link>
 
                             <!-- Authentication -->

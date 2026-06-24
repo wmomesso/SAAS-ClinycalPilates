@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class PasswordResetLinkController extends Controller
 {
@@ -36,9 +37,15 @@ class PasswordResetLinkController extends Controller
             $request->only('email')
         );
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        if ($status == Password::RESET_LINK_SENT) {
+            Alert::toast('Link de redefinição enviado para o seu e-mail!', 'success');
+
+            return back()->with('status', __($status));
+        }
+
+        Alert::toast(__($status), 'error');
+
+        return back()->withInput($request->only('email'))
+            ->withErrors(['email' => __($status)]);
     }
 }

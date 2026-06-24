@@ -64,7 +64,7 @@ return [
     |
     */
 
-    'timer' => env('SWEET_ALERT_TIMER', 5000),
+    'timer' => env('SWEET_ALERT_TIMER', 3000),
 
     /*
     |--------------------------------------------------------------------------
@@ -198,7 +198,7 @@ return [
     |
     */
 
-    'timer_progress_bar' => env('SWEET_ALERT_TIMER_PROGRESS_BAR', false),
+    'timer_progress_bar' => env('SWEET_ALERT_TIMER_PROGRESS_BAR', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -218,7 +218,7 @@ return [
 
         'timer' => env('SWEET_ALERT_MIDDLEWARE_ALERT_CLOSE_TIME', 3000),
 
-        'auto_display_error_messages' => env('SWEET_ALERT_AUTO_DISPLAY_ERROR_MESSAGES', true),
+        'auto_display_error_messages' => env('SWEET_ALERT_AUTO_DISPLAY_ERROR_MESSAGES', false),
     ],
 
     /*

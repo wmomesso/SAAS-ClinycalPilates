@@ -81,5 +81,7 @@
         {{ config('app.name', 'Laravel') }} &copy; {{ date('Y') }} - {{ __('Todos os direitos reservados') }}
     </div>
 </div>
+
+@include('sweetalert::alert')
 </body>
 </html>

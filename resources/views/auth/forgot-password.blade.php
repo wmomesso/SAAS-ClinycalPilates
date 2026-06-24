@@ -4,9 +4,6 @@
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Digite seu e-mail para receber o link de recuperação</p>
     </div>
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
-
     <form method="POST" action="{{ route('password.email') }}" class="space-y-4">
         @csrf
 
