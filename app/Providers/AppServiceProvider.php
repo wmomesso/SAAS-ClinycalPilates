@@ -4,20 +4,32 @@ namespace App\Providers;
 
 use App\Models\Clinics\Clinic\Appointment\Appointment;
 use App\Models\Clinics\Clinic\Clinic;
+use App\Models\Clinics\Clinic\Finance\BankAccount;
 use App\Models\Clinics\Clinic\Finance\Invoice;
+use App\Models\Clinics\Clinic\Finance\Payable;
+use App\Models\Clinics\Clinic\Finance\Receivable;
 use App\Models\Clinics\Clinic\Finance\ServicePackage;
+use App\Models\Clinics\Clinic\HealthInsurance\HealthInsurance;
+use App\Models\Clinics\Clinic\HealthInsurance\InsuranceGuide;
 use App\Models\Clinics\Clinic\Patient\Patient;
 use App\Models\Clinics\Clinic\Room\Room;
 use App\Models\Clinics\Clinic\Services\ServiceType;
 use App\Models\SAAS\SubscriptionPlan;
+use App\Models\User;
 use App\Policies\Clinics\Clinic\Appointment\AppointmentPolicy;
 use App\Policies\Clinics\Clinic\ClinicPolicy;
+use App\Policies\Clinics\Clinic\Finance\BankAccountPolicy;
 use App\Policies\Clinics\Clinic\Finance\InvoicePolicy;
+use App\Policies\Clinics\Clinic\Finance\PayablePolicy;
+use App\Policies\Clinics\Clinic\Finance\ReceivablePolicy;
 use App\Policies\Clinics\Clinic\Finance\ServicePackagePolicy;
+use App\Policies\Clinics\Clinic\HealthInsurance\HealthInsurancePolicy;
+use App\Policies\Clinics\Clinic\HealthInsurance\InsuranceGuidePolicy;
 use App\Policies\Clinics\Clinic\PatientPolicy;
 use App\Policies\Clinics\Clinic\Room\RoomPolicy;
 use App\Policies\Clinics\Clinic\Services\ServiceTypePolicy;
 use App\Policies\SAAS\PlanPolicy;
+use App\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -42,11 +54,17 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(Patient::class, PatientPolicy::class);
         Gate::policy(Appointment::class, AppointmentPolicy::class);
+        Gate::policy(BankAccount::class, BankAccountPolicy::class);
         Gate::policy(Clinic::class, ClinicPolicy::class);
+        Gate::policy(HealthInsurance::class, HealthInsurancePolicy::class);
+        Gate::policy(InsuranceGuide::class, InsuranceGuidePolicy::class);
         Gate::policy(Invoice::class, InvoicePolicy::class);
+        Gate::policy(Payable::class, PayablePolicy::class);
+        Gate::policy(Receivable::class, ReceivablePolicy::class);
         Gate::policy(Room::class, RoomPolicy::class);
         Gate::policy(SubscriptionPlan::class, PlanPolicy::class);
         Gate::policy(ServicePackage::class, ServicePackagePolicy::class);
         Gate::policy(ServiceType::class, ServiceTypePolicy::class);
+        Gate::policy(User::class, UserPolicy::class);
     }
 }

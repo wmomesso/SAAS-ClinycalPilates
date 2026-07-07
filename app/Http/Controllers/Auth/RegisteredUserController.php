@@ -35,7 +35,7 @@ class RegisteredUserController extends Controller
     {
         // 1. ATUALIZAMOS A VALIDAÇÃO PARA INCLUIR O NOME DA CLÍNICA
         $request->validate([
-            'clinic_name' => ['required', 'string', 'max:255'],
+            'clinic_name' => ['nullable', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
@@ -46,7 +46,7 @@ class RegisteredUserController extends Controller
         try {
             // Criar a Clínica (Tenant)
             $clinic = Clinic::create([
-                'name' => $request->clinic_name,
+                'name' => $request->clinic_name ?: $request->name,
             ]);
 
             // Criar o Usuário (Admin da Clínica)
@@ -78,6 +78,6 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         //return redirect(RouteServiceProvider::HOME);
-        return redirect(route('saas.dashboard', absolute: false));
+        return redirect(route('dashboard', absolute: false));
     }
 }

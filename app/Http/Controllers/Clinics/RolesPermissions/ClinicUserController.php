@@ -6,10 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 
 class ClinicUserController extends Controller
 {
+    private const MANAGEABLE_ROLES = ['admin-clinica', 'profissional', 'recepcionista', 'paciente'];
+
+    public function __construct()
+    {
+        $this->authorizeResource(User::class, 'clinic_user');
+    }
+
     /**
      * Exibe uma lista dos usuários da clínica logada.
      */
@@ -29,7 +37,7 @@ class ClinicUserController extends Controller
     public function create()
     {
         // Pega os perfis permitidos para a clínica
-        $roles = Role::whereIn('name', ['admin-clinica', 'profissional', 'recepcionista', 'paciente'])->get();
+        $roles = Role::whereIn('name', self::MANAGEABLE_ROLES)->get();
 
         return view('saas.clinics.users.create', compact('roles'));
     }
@@ -43,7 +51,7 @@ class ClinicUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'role' => 'required|string|exists:roles,name',
+            'role' => ['required', 'string', Rule::in(self::MANAGEABLE_ROLES)],
             'calendar_color' => 'nullable|string|max:7',
         ]);
 
@@ -61,10 +69,10 @@ class ClinicUserController extends Controller
     }
 
     // edit
-    public function edit($user)
+    public function edit(User $clinic_user)
     {
-        $user = User::find($user);
-        $roles = Role::whereIn('name', ['admin-clinica', 'profissional', 'recepcionista', 'paciente'])->get();
+        $user = $clinic_user;
+        $roles = Role::whereIn('name', self::MANAGEABLE_ROLES)->get();
 
         return view('saas.clinics.users.edit', compact('user', 'roles'));
     }
@@ -76,7 +84,7 @@ class ClinicUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,'.$clinic_user->id,
             'password' => 'nullable|string|min:8',
-            'role' => 'required|string|exists:roles,name',
+            'role' => ['required', 'string', Rule::in(self::MANAGEABLE_ROLES)],
             'calendar_color' => 'nullable|string|max:7',
         ]);
 
@@ -95,13 +103,18 @@ class ClinicUserController extends Controller
         return redirect()->route('clinic-users.index')->with('success', 'Usuário atualizado com sucesso.');
     }
 
-    public function show($clinic_user)
+    public function show(User $clinic_user)
     {
-        $user = User::find($clinic_user);
-        $roles = Role::whereIn('name', ['admin-clinica', 'profissional', 'recepcionista', 'paciente'])->get();
+        $user = $clinic_user;
+        $roles = Role::whereIn('name', self::MANAGEABLE_ROLES)->get();
 
         return view('saas.clinics.users.show', compact('user', 'roles'));
     }
 
-    // Implementar métodos edit, update, destroy seguindo a mesma lógica...
+    public function destroy(User $clinic_user)
+    {
+        $clinic_user->delete();
+
+        return redirect()->route('clinic-users.index')->with('success', 'Usuário removido com sucesso.');
+    }
 }

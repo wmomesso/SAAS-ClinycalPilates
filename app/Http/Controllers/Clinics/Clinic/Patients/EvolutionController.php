@@ -12,6 +12,8 @@ class EvolutionController extends Controller
 {
     public function store(Request $request, Patient $patient)
     {
+        $this->authorize('update', $patient);
+
         $validated = $request->validate([
             'title' => 'nullable|string|max:255',
             'type' => 'required|in:routine,emergency,evaluation,other',
@@ -30,6 +32,8 @@ class EvolutionController extends Controller
 
     public function destroy(Evolution $evolution)
     {
+        $this->authorize('update', $evolution->patient);
+
         $evolution->delete();
 
         return redirect()->back()->with('success', 'Evolução removida.');

@@ -3,13 +3,21 @@
 namespace App\Http\Controllers\Clinics\Clinic\HealthInsurance;
 
 use App\Http\Controllers\Controller;
+use App\Models\Clinics\Clinic\HealthInsurance\HealthInsurance;
 use App\Models\Clinics\Clinic\HealthInsurance\InsuranceGuide;
+use App\Models\Clinics\Clinic\Patient\Patient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class InsuranceGuideController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(InsuranceGuide::class, 'insurance_guide');
+    }
+
     /**
      * Lista as guias de convênio.
      */
@@ -27,8 +35,10 @@ class InsuranceGuideController extends Controller
      */
     public function create(): View
     {
-        // Precisaríamos carregar pacientes e convênios para o formulário
-        return view('insurance-guides.create');
+        $patients = Patient::orderBy('full_name')->get();
+        $healthInsurances = HealthInsurance::where('is_active', true)->orderBy('name')->get();
+
+        return view('insurance-guides.create', compact('patients', 'healthInsurances'));
     }
 
     /**
@@ -36,9 +46,17 @@ class InsuranceGuideController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $clinicId = $request->user()->clinic_id;
+
         $validated = $request->validate([
-            'patient_id' => 'required|exists:patients,id',
-            'health_insurance_id' => 'required|exists:health_insurances,id',
+            'patient_id' => [
+                'required',
+                Rule::exists('patients', 'id')->where(fn ($query) => $query->where('clinic_id', $clinicId)),
+            ],
+            'health_insurance_id' => [
+                'required',
+                Rule::exists('health_insurances', 'id')->where(fn ($query) => $query->where('clinic_id', $clinicId)),
+            ],
             'guide_type' => 'required|string',
             'auth_code' => 'required|string|max:255',
             'total_value' => 'required|numeric|min:0',
@@ -69,7 +87,10 @@ class InsuranceGuideController extends Controller
      */
     public function edit(InsuranceGuide $insuranceGuide): View
     {
-        return view('insurance-guides.edit', compact('insuranceGuide'));
+        $patients = Patient::orderBy('full_name')->get();
+        $healthInsurances = HealthInsurance::where('is_active', true)->orderBy('name')->get();
+
+        return view('insurance-guides.edit', compact('insuranceGuide', 'patients', 'healthInsurances'));
     }
 
     /**

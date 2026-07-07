@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class PayableController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Payable::class, 'payable');
+    }
+
     public function index()
     {
         $payables = Payable::with('bankAccount')->get();

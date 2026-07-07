@@ -57,7 +57,7 @@ class ServicePackageController extends Controller
         $serviceTypes = ServiceType::where('is_active', true)
             ->get();
 
-        return view('clinic.finance.packages.edit', compact('servicePackage', $serviceTypes));
+        return view('clinic.finance.packages.edit', compact('servicePackage', 'serviceTypes'));
     }
 
     /**

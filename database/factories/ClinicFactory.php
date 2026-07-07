@@ -9,7 +9,8 @@ class ClinicFactory extends Factory
     public function definition(): array
     {
         return [
-
+            'name' => fake()->company(),
+            'subdomain' => fake()->unique()->slug(2),
         ];
     }
 }

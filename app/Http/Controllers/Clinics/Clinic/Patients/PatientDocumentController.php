@@ -13,9 +13,11 @@ class PatientDocumentController extends Controller
 {
     public function store(Request $request, Patient $patient)
     {
+        $this->authorize('update', $patient);
+
         $request->validate([
             'name' => 'required|string|max:255',
-            'file' => 'required|file|max:10240', // max 10MB
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
         ]);
 
         if ($request->hasFile('file')) {
@@ -36,6 +38,8 @@ class PatientDocumentController extends Controller
 
     public function destroy(PatientDocument $document)
     {
+        $this->authorize('update', $document->patient);
+
         Storage::disk('public')->delete($document->file_path);
         $document->delete();
 

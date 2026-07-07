@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Clinics\Finance;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreReceivableRequest extends FormRequest
 {
@@ -21,10 +22,21 @@ class StoreReceivableRequest extends FormRequest
      */
     public function rules(): array
     {
+        $clinicId = $this->user()->clinic_id;
+
         return [
-            'bank_account_id' => 'nullable|exists:bank_accounts,id',
-            'patient_id' => 'nullable|exists:patients,id',
-            'invoice_id' => 'nullable|exists:invoices,id',
+            'bank_account_id' => [
+                'nullable',
+                Rule::exists('bank_accounts', 'id')->where(fn ($query) => $query->where('clinic_id', $clinicId)),
+            ],
+            'patient_id' => [
+                'nullable',
+                Rule::exists('patients', 'id')->where(fn ($query) => $query->where('clinic_id', $clinicId)),
+            ],
+            'invoice_id' => [
+                'nullable',
+                Rule::exists('invoices', 'id')->where(fn ($query) => $query->where('clinic_id', $clinicId)),
+            ],
             'description' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0',
             'due_date' => 'required|date',

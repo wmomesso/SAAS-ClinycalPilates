@@ -15,6 +15,8 @@ class RolePermissionController extends Controller
      */
     public function index(Role $role): JsonResponse
     {
+        abort_unless(request()->user()->hasRole('super-admin'), 403);
+
         $allPermissions = Permission::all()->groupBy(function ($permission) {
             $parts = explode('-', $permission->name);
 
@@ -35,6 +37,8 @@ class RolePermissionController extends Controller
      */
     public function update(Request $request, Role $role): JsonResponse
     {
+        abort_unless($request->user()->hasRole('super-admin'), 403);
+
         $request->validate([
             'permissions' => 'array',
             'permissions.*' => 'string|exists:permissions,name',

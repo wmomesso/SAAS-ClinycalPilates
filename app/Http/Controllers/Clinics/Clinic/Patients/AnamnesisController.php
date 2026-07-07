@@ -12,6 +12,8 @@ class AnamnesisController extends Controller
 {
     public function store(Request $request, Patient $patient)
     {
+        $this->authorize('update', $patient);
+
         $validated = $request->validate([
             'main_complaint' => 'required|string',
             'history_of_current_illness' => 'required|string',
@@ -30,20 +32,26 @@ class AnamnesisController extends Controller
 
     public function show(Anamnesis $anamnesis)
     {
+        $this->authorize('view', $anamnesis->patient);
+
         return response()->json($anamnesis->load('professional'));
     }
 
     public function compare(Request $request, Patient $patient)
     {
+        $this->authorize('view', $patient);
+
         $ids = $request->validate([
             'ids' => 'required|array|min:2|max:2',
-            'ids.*' => 'exists:anamneses,id',
         ]);
 
-        $anamneses = Anamnesis::whereIn('id', $ids['ids'])
+        $anamneses = $patient->anamneses()
+            ->whereIn('id', $ids['ids'])
             ->with('professional')
             ->orderBy('created_at', 'desc')
             ->get();
+
+        abort_unless($anamneses->count() === 2, 404);
 
         return view('patients.anamnesis.compare', compact('patient', 'anamneses'));
     }

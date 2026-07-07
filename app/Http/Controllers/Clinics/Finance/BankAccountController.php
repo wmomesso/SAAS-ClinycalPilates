@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Auth;
 
 class BankAccountController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(BankAccount::class, 'bank_account');
+    }
+
     public function index()
     {
         $bankAccounts = BankAccount::query()->get();

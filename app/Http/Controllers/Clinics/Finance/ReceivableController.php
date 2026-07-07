@@ -11,6 +11,11 @@ use Illuminate\Http\Request;
 
 class ReceivableController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Receivable::class, 'receivable');
+    }
+
     public function index()
     {
         $receivables = Receivable::with(['bankAccount', 'patient'])->get();

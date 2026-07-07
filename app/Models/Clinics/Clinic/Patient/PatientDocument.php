@@ -2,7 +2,6 @@
 
 namespace App\Models\Clinics\Clinic\Patient;
 
-use App\Models\Clinics\Clinic\Patient;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

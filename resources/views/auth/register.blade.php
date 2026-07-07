@@ -7,6 +7,26 @@
     <form method="POST" action="{{ route('register') }}" class="space-y-4">
         @csrf
 
+        <!-- Clinic Name -->
+        <div>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9h1m-1 4h1m-1 4h1m4-4h1m-1 4h1"/>
+                    </svg>
+                </div>
+                <x-text-input id="clinic_name"
+                              class="block w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-primary focus:ring-primary dark:focus:border-primary dark:focus:ring-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                              type="text"
+                              name="clinic_name"
+                              :value="old('clinic_name')"
+                              required
+                              autocomplete="organization"
+                              placeholder="Nome da clínica" />
+            </div>
+            <x-input-error :messages="$errors->get('clinic_name')" class="mt-1.5 text-xs" />
+        </div>
+
         <!-- Name -->
         <div>
             <div class="relative">

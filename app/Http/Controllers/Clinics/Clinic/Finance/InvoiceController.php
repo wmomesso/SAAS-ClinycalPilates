@@ -34,9 +34,26 @@ class InvoiceController extends Controller
     public function store(StoreInvoiceRequest $request)
     {
         $data = $request->validated();
-        $data['invoice_number'] = 'INV-'.strtoupper(uniqid());
+        $items = $data['items'];
+        unset($data['items']);
 
-        Invoice::create($data);
+        $data['invoice_number'] = 'INV-'.strtoupper(uniqid());
+        $data['total_amount'] = collect($items)->sum(fn ($item) => $item['quantity'] * $item['unit_price']);
+
+        DB::transaction(function () use ($data, $items) {
+            $invoice = Invoice::create($data);
+
+            foreach ($items as $item) {
+                $invoice->items()->create([
+                    'description' => $item['description'],
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $item['unit_price'],
+                    'total' => $item['quantity'] * $item['unit_price'],
+                    'itemable_id' => $item['itemable_id'] ?? null,
+                    'itemable_type' => $item['itemable_type'] ?? null,
+                ]);
+            }
+        });
 
         return redirect()->route('invoices.index')
             ->with('success', 'Fatura gerada com sucesso.');
@@ -77,6 +94,7 @@ class InvoiceController extends Controller
 
             // Atualiza o montante pago na fatura
             $invoice->increment('amount_paid', $request->amount);
+            $invoice->refresh();
 
             // Se o total foi atingido, marca como paga
             if ($invoice->amount_paid >= $invoice->total_amount) {

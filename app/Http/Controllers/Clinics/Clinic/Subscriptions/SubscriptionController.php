@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SAAS\SubscriptionPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class SubscriptionController extends Controller
 {
@@ -19,6 +20,8 @@ class SubscriptionController extends Controller
         }
 
         $clinic = Auth::user()->clinic;
+        abort_unless($clinic, 403);
+
         $plans = SubscriptionPlan::where('is_active', true)->get();
         $currentSubscription = $clinic->subscription('default');
 
@@ -34,12 +37,22 @@ class SubscriptionController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        $request->validate([
-            'plan_id' => 'required|exists:subscription_plans,stripe_plan_id',
+        $validated = $request->validate([
+            'plan_id' => [
+                'required',
+                Rule::exists('subscription_plans', 'stripe_plan_id')->where('is_active', true),
+            ],
         ]);
 
-        return Auth::user()->clinic
-            ->newSubscription('default', $request->plan_id)
+        $clinic = Auth::user()->clinic;
+        abort_unless($clinic, 403);
+
+        if ($clinic->subscribed('default')) {
+            return $clinic->redirectToBillingPortal(route('subscription.index'));
+        }
+
+        return $clinic
+            ->newSubscription('default', $validated['plan_id'])
             ->checkout([
                 'success_url' => route('subscription.index').'?success=true',
                 'cancel_url' => route('subscription.index').'?canceled=true',
@@ -55,7 +68,10 @@ class SubscriptionController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        return $request->user()->clinic->redirectToBillingPortal(
+        $clinic = $request->user()->clinic;
+        abort_unless($clinic, 403);
+
+        return $clinic->redirectToBillingPortal(
             route('subscription.index')
         );
     }

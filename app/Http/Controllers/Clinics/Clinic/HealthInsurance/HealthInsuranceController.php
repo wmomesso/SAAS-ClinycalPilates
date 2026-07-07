@@ -10,6 +10,11 @@ use Illuminate\View\View;
 
 class HealthInsuranceController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(HealthInsurance::class, 'health_insurance');
+    }
+
     /**
      * Exibe a lista de convênios.
      */

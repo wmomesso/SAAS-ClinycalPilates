@@ -263,7 +263,7 @@ class AppointmentController extends Controller
 
     protected function generateRecurrences(Appointment $mainAppointment, array $data): void
     {
-        $until = new \Carbon\Carbon($data['recurrence_until']);
+        $until = (new \Carbon\Carbon($data['recurrence_until']))->endOfDay();
         $currentStart = new \Carbon\Carbon($data['start_time']);
         $currentEnd = new \Carbon\Carbon($data['end_time']);
         $rule = $data['recurrence_rule'];
