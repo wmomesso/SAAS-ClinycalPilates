@@ -88,9 +88,43 @@
                     </div>
                 </div>
 
+                <div class="border-t border-gray-100 dark:border-gray-700 pt-6">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white">Dados de Saúde</h3>
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <x-input-label for="blood_type" :value="__('Tipo Sanguíneo')" />
+                            <select id="blood_type" name="blood_type" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary-500 dark:focus:border-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 rounded-xl shadow-sm">
+                                <option value="">Não informado</option>
+                                @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $bloodType)
+                                    <option value="{{ $bloodType }}" {{ old('blood_type') === $bloodType ? 'selected' : '' }}>{{ $bloodType }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error class="mt-2" :messages="$errors->get('blood_type')" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="allergies" :value="__('Alergias')" />
+                            <textarea id="allergies" name="allergies" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary-500 dark:focus:border-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 rounded-xl shadow-sm">{{ old('allergies') }}</textarea>
+                            <x-input-error class="mt-2" :messages="$errors->get('allergies')" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="medications" :value="__('Medicamentos em Uso')" />
+                            <textarea id="medications" name="medications" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary-500 dark:focus:border-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 rounded-xl shadow-sm">{{ old('medications') }}</textarea>
+                            <x-input-error class="mt-2" :messages="$errors->get('medications')" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="lifestyle_habits" :value="__('Hábitos de Vida')" />
+                            <textarea id="lifestyle_habits" name="lifestyle_habits" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary-500 dark:focus:border-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 rounded-xl shadow-sm">{{ old('lifestyle_habits') }}</textarea>
+                            <x-input-error class="mt-2" :messages="$errors->get('lifestyle_habits')" />
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Histórico Médico --}}
                 <div class="mt-6">
-                    <x-input-label for="medical_history" :value="__('Observações Iniciais / Histórico Breve')" />
+                    <x-input-label for="medical_history" :value="__('Histórico Médico / Outras Observações Clínicas')" />
                     <textarea id="medical_history" name="medical_history" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary-500 dark:focus:border-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 rounded-xl shadow-sm">{{ old('medical_history') }}</textarea>
                     <x-input-error class="mt-2" :messages="$errors->get('medical_history')" />
                 </div>

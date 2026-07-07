@@ -48,6 +48,13 @@ class BankAccountController extends Controller
 
     public function destroy(BankAccount $bankAccount)
     {
+        if ($bankAccount->payables()->exists() || $bankAccount->receivables()->exists() || $bankAccount->patientPackages()->exists()) {
+            $bankAccount->update(['is_active' => false]);
+
+            return redirect()->route('bank-accounts.index')
+                ->with('success', 'Conta bancária possui lançamentos e foi desativada.');
+        }
+
         $bankAccount->delete();
 
         return redirect()->route('bank-accounts.index')->with('success', 'Conta bancária excluída com sucesso.');

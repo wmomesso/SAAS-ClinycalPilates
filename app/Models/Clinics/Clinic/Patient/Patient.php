@@ -2,6 +2,10 @@
 
 namespace App\Models\Clinics\Clinic\Patient;
 
+use App\Models\Clinics\Clinic\Appointment\Appointment;
+use App\Models\Clinics\Clinic\Clinic;
+use App\Models\Clinics\Clinic\Finance\PatientPackage;
+use App\Models\Clinics\Clinic\Finance\Receivable;
 use App\Models\Traits\BelongsToClinic;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -51,8 +55,23 @@ class Patient extends Model
         return $this->hasMany(Evolution::class)->orderBy('created_at', 'desc');
     }
 
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class)->orderBy('start_time', 'desc');
+    }
+
     public function documents(): HasMany
     {
         return $this->hasMany(PatientDocument::class);
+    }
+
+    public function packages(): HasMany
+    {
+        return $this->hasMany(PatientPackage::class)->orderBy('start_date', 'desc');
+    }
+
+    public function receivables(): HasMany
+    {
+        return $this->hasMany(Receivable::class)->orderBy('due_date', 'desc');
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Clinics\Finance\StorePayableRequest;
 use App\Models\Clinics\Clinic\Finance\BankAccount;
 use App\Models\Clinics\Clinic\Finance\Payable;
+use App\Models\Clinics\Clinic\Finance\PaymentMethod;
 use Illuminate\Http\Request;
 
 class PayableController extends Controller
@@ -17,7 +18,7 @@ class PayableController extends Controller
 
     public function index()
     {
-        $payables = Payable::with('bankAccount')->get();
+        $payables = Payable::with(['bankAccount', 'paymentMethod'])->get();
 
         return view('finance.payables.index', compact('payables'));
     }
@@ -25,8 +26,9 @@ class PayableController extends Controller
     public function create()
     {
         $bankAccounts = BankAccount::where('is_active', true)->get();
+        $paymentMethods = PaymentMethod::where('is_active', true)->orderBy('name')->get();
 
-        return view('finance.payables.create', compact('bankAccounts'));
+        return view('finance.payables.create', compact('bankAccounts', 'paymentMethods'));
     }
 
     public function store(StorePayableRequest $request)
@@ -39,8 +41,9 @@ class PayableController extends Controller
     public function edit(Payable $payable)
     {
         $bankAccounts = BankAccount::where('is_active', true)->get();
+        $paymentMethods = PaymentMethod::where('is_active', true)->orderBy('name')->get();
 
-        return view('finance.payables.edit', compact('payable', 'bankAccounts'));
+        return view('finance.payables.edit', compact('payable', 'bankAccounts', 'paymentMethods'));
     }
 
     public function update(StorePayableRequest $request, Payable $payable)

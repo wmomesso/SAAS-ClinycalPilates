@@ -18,11 +18,17 @@ class BankAccount extends Model
         'agency',
         'account_number',
         'initial_balance',
+        'has_pix',
+        'pix_key_type',
+        'pix_key',
+        'issues_bank_slips',
         'is_active',
     ];
 
     protected $casts = [
         'initial_balance' => 'decimal:2',
+        'has_pix' => 'boolean',
+        'issues_bank_slips' => 'boolean',
         'is_active' => 'boolean',
     ];
 
@@ -34,5 +40,10 @@ class BankAccount extends Model
     public function receivables(): HasMany
     {
         return $this->hasMany(Receivable::class);
+    }
+
+    public function patientPackages(): HasMany
+    {
+        return $this->hasMany(PatientPackage::class);
     }
 }

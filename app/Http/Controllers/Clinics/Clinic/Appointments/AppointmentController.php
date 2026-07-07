@@ -155,6 +155,7 @@ class AppointmentController extends Controller
         // Verificar conflito excluindo o atual
         // Carregamos o objeto atual para garantir que temos os dados necessários para a verificação de conflito
         $conflictData = [
+            'patient_id' => $data['patient_id'] ?? $appointment->patient_id,
             'professional_id' => $data['professional_id'] ?? $appointment->professional_id,
             'room_id' => $data['room_id'] ?? $appointment->room_id,
             'start_time' => $data['start_time'] ?? $appointment->start_time->format('Y-m-d H:i:s'),
@@ -316,83 +317,152 @@ class AppointmentController extends Controller
      */
     public function updateStatus(Request $request, Appointment $appointment)
     {
-        // Verificar se é uma requisição de cancelamento com notes
-        if ($request->has('status') && $request->status === 'canceled') {
-            $this->authorize('update', $appointment);
-
-            $request->validate([
-                'notes' => 'required|string|min:3',
-            ], [
-                'notes.required' => 'O motivo do cancelamento é obrigatório.',
-            ]);
-
-            $appointment->update([
-                'status' => 'canceled',
-                'notes' => $appointment->notes ? $appointment->notes."\nCancelado: ".$request->notes : 'Cancelado: '.$request->notes,
-            ]);
-
-            return response()->json(['message' => 'Agendamento cancelado com sucesso.']);
-        }
-
         $this->authorize('update', $appointment);
 
         $request->validate([
             'status' => 'required|string|in:scheduled,confirmed,completed,canceled,no_show',
-            'notes' => 'nullable|string',
+            'notes' => $request->status === 'canceled' ? 'required|string|min:3' : 'nullable|string',
+        ], [
+            'notes.required' => 'O motivo do cancelamento é obrigatório.',
         ]);
 
         $oldStatus = $appointment->status;
         $newStatus = $request->status;
+        $packageWasProcessed = false;
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($appointment, $oldStatus, $newStatus, $request) {
-            $updateData = ['status' => $newStatus];
-            if ($request->has('notes')) {
-                $updateData['notes'] = $appointment->notes ? $appointment->notes."\n".$request->notes : $request->notes;
+        \Illuminate\Support\Facades\DB::transaction(function () use ($appointment, $oldStatus, $newStatus, $request, &$packageWasProcessed) {
+            if ($oldStatus !== $newStatus && $this->isPackageBillableStatus($oldStatus)) {
+                $this->releasePackageSession($appointment, $oldStatus);
             }
+
+            $updateData = [
+                'status' => $newStatus,
+            ];
+
+            if ($oldStatus !== $newStatus) {
+                $updateData['patient_package_id'] = null;
+            }
+
+            if ($request->filled('notes')) {
+                $prefix = match ($newStatus) {
+                    'canceled' => 'Cancelado: ',
+                    'no_show' => 'Falta: ',
+                    default => '',
+                };
+                $note = $prefix.$request->notes;
+                $updateData['notes'] = $appointment->notes ? $appointment->notes."\n".$note : $note;
+            }
+
+            if ($oldStatus !== $newStatus && $this->isPackageBillableStatus($newStatus)) {
+                $package = $this->consumePackageSession($appointment, $newStatus);
+                if ($package) {
+                    $updateData['patient_package_id'] = $package->id;
+                    $packageWasProcessed = true;
+                }
+            }
+
             $appointment->update($updateData);
-
-            // Lógica de baixa de sessão em pacote se o status for alterado para 'completed'
-            if ($newStatus === 'completed' && $oldStatus !== 'completed') {
-                $package = \App\Models\Clinics\Clinic\Finance\PatientPackage::where('patient_id', $appointment->patient_id)
-                    ->where('status', 'active')
-                    ->where('used_sessions', '<', \Illuminate\Support\Facades\DB::raw('total_sessions'))
-                    ->orderBy('start_date', 'asc')
-                    ->first();
-
-                if ($package) {
-                    $package->increment('used_sessions');
-
-                    // Se atingiu o limite, marca como concluído
-                    if ($package->used_sessions >= $package->total_sessions) {
-                        $package->update(['status' => 'completed']);
-                    }
-                }
-            }
-
-            // Lógica de estorno de sessão se o status 'completed' for revertido
-            if ($oldStatus === 'completed' && $newStatus !== 'completed') {
-                $package = \App\Models\Clinics\Clinic\Finance\PatientPackage::where('patient_id', $appointment->patient_id)
-                    ->where('used_sessions', '>', 0)
-                    ->orderBy('updated_at', 'desc')
-                    ->first();
-
-                if ($package) {
-                    $package->decrement('used_sessions');
-                    if ($package->status === 'completed') {
-                        $package->update(['status' => 'active']);
-                    }
-                }
-            }
         });
 
-        return response()->json(['message' => 'Status atualizado e sessões processadas.']);
+        $message = 'Status atualizado com sucesso.';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => $message,
+                'package_processed' => $packageWasProcessed,
+            ]);
+        }
+
+        return back()->with('success', $message);
     }
 
     public function destroy(Appointment $appointment)
     {
-        $appointment->delete();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($appointment) {
+            if ($this->isPackageBillableStatus($appointment->status)) {
+                $this->releasePackageSession($appointment, $appointment->status);
+            }
+
+            $appointment->delete();
+        });
+
+        if (request()->wantsJson()) {
+            return response()->json(['message' => 'Agendamento desmarcado com sucesso.']);
+        }
 
         return redirect()->route('appointments.index')
             ->with('success', 'Agendamento removido.');
+    }
+
+    protected function isPackageBillableStatus(?string $status): bool
+    {
+        return in_array($status, ['completed', 'no_show'], true);
+    }
+
+    protected function packageSessionColumn(string $status): string
+    {
+        return $status === 'no_show' ? 'missed_sessions' : 'used_sessions';
+    }
+
+    protected function consumePackageSession(Appointment $appointment, string $status): ?\App\Models\Clinics\Clinic\Finance\PatientPackage
+    {
+        $package = \App\Models\Clinics\Clinic\Finance\PatientPackage::query()
+            ->where('patient_id', $appointment->patient_id)
+            ->where('status', 'active')
+            ->whereDate('start_date', '<=', $appointment->start_time->toDateString())
+            ->where(function ($query) use ($appointment) {
+                $query->whereNull('end_date')
+                    ->orWhereDate('end_date', '>=', $appointment->start_time->toDateString());
+            })
+            ->whereRaw('(used_sessions + missed_sessions) < total_sessions')
+            ->when($appointment->service_type_id, function ($query) use ($appointment) {
+                $query->whereHas('package', function ($packageQuery) use ($appointment) {
+                    $packageQuery->where('service_type_id', $appointment->service_type_id);
+                });
+            })
+            ->orderBy('start_date')
+            ->lockForUpdate()
+            ->first();
+
+        if (! $package) {
+            return null;
+        }
+
+        $package->increment($this->packageSessionColumn($status));
+        $package->refresh();
+        $this->refreshPackageStatus($package);
+
+        return $package;
+    }
+
+    protected function releasePackageSession(Appointment $appointment, string $status): void
+    {
+        $package = $appointment->patientPackage()
+            ->lockForUpdate()
+            ->first();
+
+        if (! $package) {
+            return;
+        }
+
+        $column = $this->packageSessionColumn($status);
+        if ($package->{$column} > 0) {
+            $package->decrement($column);
+        }
+
+        $package->refresh();
+        $this->refreshPackageStatus($package);
+
+        $appointment->forceFill(['patient_package_id' => null])->save();
+    }
+
+    protected function refreshPackageStatus(\App\Models\Clinics\Clinic\Finance\PatientPackage $package): void
+    {
+        $consumedSessions = (int) $package->used_sessions + (int) $package->missed_sessions;
+        $status = $consumedSessions >= (int) $package->total_sessions ? 'completed' : 'active';
+
+        if ($package->status !== $status) {
+            $package->update(['status' => $status]);
+        }
     }
 }

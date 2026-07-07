@@ -550,9 +550,9 @@
 
                 {{-- Financeiro --}}
                 <li>
-                    <button type="button" class="flex items-center w-full gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 group {{ request()->routeIs('invoices.*') || request()->routeIs('service-packages.*') || request()->routeIs('service-types.*') ? 'bg-primary-50/80 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400' : '' }}" data-collapse-toggle="dropdown-financeiro">
+                    <button type="button" class="flex items-center w-full gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 group {{ request()->routeIs('invoices.*') || request()->routeIs('service-packages.*') || request()->routeIs('service-types.*') || request()->routeIs('bank-accounts.*') || request()->routeIs('bank-reconciliation.*') || request()->routeIs('payment-methods.*') || request()->routeIs('financial-reports.*') || request()->routeIs('payables.*') || request()->routeIs('receivables.*') ? 'bg-primary-50/80 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400' : '' }}" data-collapse-toggle="dropdown-financeiro">
                         <div class="flex items-center justify-center transition-transform group-hover:scale-110">
-                            <svg class="w-5 h-5 transition-colors duration-200 {{ request()->routeIs('invoices.*') || request()->routeIs('service-packages.*') || request()->routeIs('service-types.*') ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 transition-colors duration-200 {{ request()->routeIs('invoices.*') || request()->routeIs('service-packages.*') || request()->routeIs('service-types.*') || request()->routeIs('bank-accounts.*') || request()->routeIs('bank-reconciliation.*') || request()->routeIs('payment-methods.*') || request()->routeIs('financial-reports.*') || request()->routeIs('payables.*') || request()->routeIs('receivables.*') ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                         </div>
@@ -561,13 +561,31 @@
                     </button>
                     <ul id="dropdown-financeiro" class="hidden py-2 space-y-1 ml-9">
                         <li>
+                            <a href="{{ route('bank-accounts.index') }}" class="flex items-center p-2 text-sm font-medium text-gray-600 dark:text-gray-400 rounded-xl hover:text-primary-600 dark:hover:text-primary-400 transition-colors {{ request()->routeIs('bank-accounts.*') ? 'text-primary-600 font-bold' : '' }}">Contas Bancárias</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('bank-reconciliation.index') }}" class="flex items-center p-2 text-sm font-medium text-gray-600 dark:text-gray-400 rounded-xl hover:text-primary-600 dark:hover:text-primary-400 transition-colors {{ request()->routeIs('bank-reconciliation.*') ? 'text-primary-600 font-bold' : '' }}">Conciliação Bancária</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('payment-methods.index') }}" class="flex items-center p-2 text-sm font-medium text-gray-600 dark:text-gray-400 rounded-xl hover:text-primary-600 dark:hover:text-primary-400 transition-colors {{ request()->routeIs('payment-methods.*') ? 'text-primary-600 font-bold' : '' }}">Formas de Pagamento</a>
+                        </li>
+                        <li>
                             <a href="{{ route('invoices.index') }}" class="flex items-center p-2 text-sm font-medium text-gray-600 dark:text-gray-400 rounded-xl hover:text-primary-600 dark:hover:text-primary-400 transition-colors {{ request()->routeIs('invoices.*') ? 'text-primary-600 font-bold' : '' }}">Faturamento</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('receivables.index') }}" class="flex items-center p-2 text-sm font-medium text-gray-600 dark:text-gray-400 rounded-xl hover:text-primary-600 dark:hover:text-primary-400 transition-colors {{ request()->routeIs('receivables.*') ? 'text-primary-600 font-bold' : '' }}">Contas a Receber</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('payables.index') }}" class="flex items-center p-2 text-sm font-medium text-gray-600 dark:text-gray-400 rounded-xl hover:text-primary-600 dark:hover:text-primary-400 transition-colors {{ request()->routeIs('payables.*') ? 'text-primary-600 font-bold' : '' }}">Contas a Pagar</a>
                         </li>
                         <li>
                             <a href="{{ route('service-packages.index') }}" class="flex items-center p-2 text-sm font-medium text-gray-600 dark:text-gray-400 rounded-xl hover:text-primary-600 dark:hover:text-primary-400 transition-colors {{ request()->routeIs('service-packages.*') ? 'text-primary-600 font-bold' : '' }}">Pacotes</a>
                         </li>
                         <li>
                             <a href="{{ route('service-types.index') }}" class="flex items-center p-2 text-sm font-medium text-gray-600 dark:text-gray-400 rounded-xl hover:text-primary-600 dark:hover:text-primary-400 transition-colors {{ request()->routeIs('service-types.*') ? 'text-primary-600 font-bold' : '' }}">Tipos de Atendimento</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('financial-reports.index') }}" class="flex items-center p-2 text-sm font-medium text-gray-600 dark:text-gray-400 rounded-xl hover:text-primary-600 dark:hover:text-primary-400 transition-colors {{ request()->routeIs('financial-reports.*') ? 'text-primary-600 font-bold' : '' }}">Relatórios</a>
                         </li>
                     </ul>
                 </li>

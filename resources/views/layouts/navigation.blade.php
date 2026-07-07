@@ -43,9 +43,12 @@
                             </x-slot>
                             <x-slot name="content">
                                 <x-dropdown-link :href="route('bank-accounts.index')">Contas Bancárias</x-dropdown-link>
+                                <x-dropdown-link :href="route('bank-reconciliation.index')">Conciliação Bancária</x-dropdown-link>
+                                <x-dropdown-link :href="route('payment-methods.index')">Formas de Pagamento</x-dropdown-link>
                                 <x-dropdown-link :href="route('payables.index')">Contas a Pagar</x-dropdown-link>
                                 <x-dropdown-link :href="route('receivables.index')">Contas a Receber</x-dropdown-link>
                                 <x-dropdown-link :href="route('invoices.index')">Faturamento</x-dropdown-link>
+                                <x-dropdown-link :href="route('financial-reports.index')">Relatórios</x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -135,9 +138,12 @@
             <div class="border-t border-gray-200 dark:border-gray-600 pt-2 pb-1">
                 <div class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Financeiro</div>
                 <x-responsive-nav-link :href="route('bank-accounts.index')" :active="request()->routeIs('bank-accounts.*')">Contas Bancárias</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('bank-reconciliation.index')" :active="request()->routeIs('bank-reconciliation.*')">Conciliação Bancária</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('payment-methods.index')" :active="request()->routeIs('payment-methods.*')">Formas de Pagamento</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('payables.index')" :active="request()->routeIs('payables.*')">Contas a Pagar</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('receivables.index')" :active="request()->routeIs('receivables.*')">Contas a Receber</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('invoices.index')" :active="request()->routeIs('invoices.*')">Faturamento</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('financial-reports.index')" :active="request()->routeIs('financial-reports.*')">Relatórios</x-responsive-nav-link>
             </div>
             @endunless
         </div>

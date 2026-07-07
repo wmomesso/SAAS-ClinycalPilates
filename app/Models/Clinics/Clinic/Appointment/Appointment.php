@@ -4,6 +4,7 @@ namespace App\Models\Clinics\Clinic\Appointment;
 
 use App\Models\Clinics\Clinic\Clinic;
 use App\Models\Clinics\Clinic\HealthInsurance\InsuranceGuide;
+use App\Models\Clinics\Clinic\Finance\PatientPackage;
 use App\Models\Clinics\Clinic\Patient\Patient;
 use App\Models\Clinics\Clinic\Room\Room;
 use App\Models\Clinics\Clinic\Services\ServiceType;
@@ -24,6 +25,7 @@ class Appointment extends Model
         'professional_id',
         'room_id',
         'service_type_id',
+        'patient_package_id',
         'is_insurance',
         'insurance_guide_id',
         'start_time',
@@ -63,6 +65,11 @@ class Appointment extends Model
     public function serviceType(): BelongsTo
     {
         return $this->belongsTo(ServiceType::class);
+    }
+
+    public function patientPackage(): BelongsTo
+    {
+        return $this->belongsTo(PatientPackage::class);
     }
 
     public function insuranceGuide(): BelongsTo

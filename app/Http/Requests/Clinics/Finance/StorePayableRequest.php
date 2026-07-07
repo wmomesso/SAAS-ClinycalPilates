@@ -32,6 +32,10 @@ class StorePayableRequest extends FormRequest
             'description' => 'required|string|max:255',
             'provider' => 'nullable|string|max:255',
             'amount' => 'required|numeric|min:0',
+            'payment_method_id' => [
+                'nullable',
+                Rule::exists('payment_methods', 'id')->where(fn ($query) => $query->where('clinic_id', $clinicId)),
+            ],
             'due_date' => 'required|date',
             'payment_date' => 'nullable|date',
             'amount_paid' => 'nullable|numeric|min:0',

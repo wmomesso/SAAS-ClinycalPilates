@@ -56,9 +56,9 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <x-input-label for="total_sessions" :value="__('Total de Sessões')" />
-                        <x-text-input id="total_sessions" name="total_sessions" type="number" min="1" class="mt-1 block w-full" :value="old('total_sessions', 10)" required />
-                        <x-input-error class="mt-2" :messages="$errors->get('total_sessions')" />
+                        <x-input-label for="number_of_sessions" :value="__('Total de Sessões')" />
+                        <x-text-input id="number_of_sessions" name="number_of_sessions" type="number" min="1" class="mt-1 block w-full" :value="old('number_of_sessions', 10)" required />
+                        <x-input-error class="mt-2" :messages="$errors->get('number_of_sessions')" />
                     </div>
 
                     <div>
@@ -69,10 +69,10 @@
                 </div>
 
                 <div>
-                    <x-input-label for="validity_days" :value="__('Validade em Dias')" />
-                    <x-text-input id="validity_days" name="validity_days" type="number" min="1" class="mt-1 block w-full" :value="old('validity_days', 30)" required />
+                    <x-input-label for="validity_in_days" :value="__('Validade em Dias')" />
+                    <x-text-input id="validity_in_days" name="validity_in_days" type="number" min="1" class="mt-1 block w-full" :value="old('validity_in_days', 30)" />
                     <p class="text-xs text-gray-500 mt-1">Após este período, as sessões não utilizadas expiram.</p>
-                    <x-input-error class="mt-2" :messages="$errors->get('validity_days')" />
+                    <x-input-error class="mt-2" :messages="$errors->get('validity_in_days')" />
                 </div>
 
                 <div class="flex items-center justify-end mt-8 gap-4">

@@ -30,6 +30,11 @@ class StorePatientRequest extends FormRequest
             'emergency_contact_phone' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'array'],
             'medical_history' => ['nullable', 'string'],
+            'medications' => ['nullable', 'string'],
+            'allergies' => ['nullable', 'string'],
+            'lifestyle_habits' => ['nullable', 'string'],
+            'blood_type' => ['nullable', 'string', 'max:3', Rule::in(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])],
+            'is_active' => ['sometimes', 'boolean'],
         ];
     }
 }

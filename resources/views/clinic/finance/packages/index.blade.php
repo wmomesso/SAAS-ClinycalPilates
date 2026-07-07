@@ -61,16 +61,16 @@
                     <div class="space-y-3 mb-6">
                         <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                             <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span>{{ $package->total_sessions }} Sessões</span>
+                            <span>{{ $package->number_of_sessions }} Sessões</span>
                         </div>
                         <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                             <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span>Validade: {{ $package->validity_days }} dias</span>
+                            <span>Validade: {{ $package->validity_in_days ?? 'Sem vencimento' }}{{ $package->validity_in_days ? ' dias' : '' }}</span>
                         </div>
                     </div>
 
                     <div class="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-600">
-                         <span class="text-xs text-gray-500">Preço por sessão: R$ {{ number_format($package->price / $package->total_sessions, 2, ',', '.') }}</span>
+                         <span class="text-xs text-gray-500">Preço por sessão: R$ {{ number_format($package->price / max(1, $package->number_of_sessions), 2, ',', '.') }}</span>
                     </div>
                 </div>
             @empty

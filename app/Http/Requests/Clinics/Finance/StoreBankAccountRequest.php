@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Clinics\Finance;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreBankAccountRequest extends FormRequest
 {
@@ -12,6 +13,15 @@ class StoreBankAccountRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'has_pix' => $this->boolean('has_pix'),
+            'issues_bank_slips' => $this->boolean('issues_bank_slips'),
+            'is_active' => $this->boolean('is_active'),
+        ]);
     }
 
     /**
@@ -27,6 +37,10 @@ class StoreBankAccountRequest extends FormRequest
             'agency' => 'nullable|string|max:255',
             'account_number' => 'nullable|string|max:255',
             'initial_balance' => 'required|numeric',
+            'has_pix' => 'boolean',
+            'pix_key_type' => ['nullable', 'required_if:has_pix,1', Rule::in(['cpf', 'cnpj', 'email', 'phone', 'random'])],
+            'pix_key' => 'nullable|required_if:has_pix,1|string|max:255',
+            'issues_bank_slips' => 'boolean',
             'is_active' => 'boolean',
         ];
     }

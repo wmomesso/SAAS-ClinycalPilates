@@ -62,6 +62,7 @@
                 <th scope="col" class="px-6 py-3">Nome</th>
                 <th scope="col" class="px-6 py-3">Banco</th>
                 <th scope="col" class="px-6 py-3">Agência / Conta</th>
+                <th scope="col" class="px-6 py-3">Recebimentos</th>
                 <th scope="col" class="px-6 py-3">Saldo Inicial</th>
                 <th scope="col" class="px-6 py-3">Status</th>
                 <th scope="col" class="px-6 py-3 text-right">Ações</th>
@@ -75,6 +76,23 @@
                     </th>
                     <td class="px-6 py-4">{{ $account->bank_name ?? '-' }}</td>
                     <td class="px-6 py-4">{{ $account->agency ?? '-' }} / {{ $account->account_number ?? '-' }}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-wrap gap-1">
+                            @if($account->has_pix)
+                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
+                                    Pix {{ $account->pix_key_type ? strtoupper($account->pix_key_type) : '' }}
+                                </span>
+                            @endif
+                            @if($account->issues_bank_slips)
+                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                    Boleto
+                                </span>
+                            @endif
+                            @if(! $account->has_pix && ! $account->issues_bank_slips)
+                                <span>-</span>
+                            @endif
+                        </div>
+                    </td>
                     <td class="px-6 py-4">R$ {{ number_format($account->initial_balance, 2, ',', '.') }}</td>
                     <td class="px-6 py-4">
                         @if($account->is_active)
@@ -85,6 +103,11 @@
                     </td>
                     <td class="px-6 py-4 text-right">
                         <a href="{{ route('bank-accounts.edit', $account) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</a>
+                        <form action="{{ route('bank-accounts.destroy', $account) }}" method="POST" class="inline ml-3" onsubmit="return confirmDelete(this, 'Excluir esta conta? Se possuir lançamentos, ela será apenas desativada.');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="font-medium text-red-600 hover:underline">Excluir</button>
+                        </form>
                     </td>
                 </tr>
             @endforeach

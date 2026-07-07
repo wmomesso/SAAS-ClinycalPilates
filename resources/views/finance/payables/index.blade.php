@@ -63,6 +63,7 @@
                 <th scope="col" class="px-6 py-3">Fornecedor</th>
                 <th scope="col" class="px-6 py-3">Vencimento</th>
                 <th scope="col" class="px-6 py-3">Valor</th>
+                <th scope="col" class="px-6 py-3">Pagamento</th>
                 <th scope="col" class="px-6 py-3">Status</th>
                 <th scope="col" class="px-6 py-3 text-right">Ações</th>
             </tr>
@@ -76,6 +77,10 @@
                     <td class="px-6 py-4">{{ $payable->provider ?? '-' }}</td>
                     <td class="px-6 py-4">{{ $payable->due_date->format('d/m/Y') }}</td>
                     <td class="px-6 py-4">R$ {{ number_format($payable->amount, 2, ',', '.') }}</td>
+                    <td class="px-6 py-4">
+                        <div>{{ $payable->paymentMethod?->name ?? '-' }}</div>
+                        <div class="text-xs text-gray-400">{{ $payable->bankAccount?->name ?? 'Sem conta' }}</div>
+                    </td>
                     <td class="px-6 py-4">
                         @php
                             $statusColors = [

@@ -68,9 +68,41 @@
             @endforeach
         </div>
 
-        <!-- Calendário -->
-        <div id="calendar-container" class="min-h-[600px] mb-8 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
-            <div id="calendar" class="p-2"></div>
+        <!-- Agenda -->
+        <div id="schedule-container" class="mb-8 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" id="prev-day-btn" class="schedule-nav-btn" aria-label="Dia anterior">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    <button type="button" id="today-btn" class="schedule-action-btn">Hoje</button>
+                    <button type="button" id="next-day-btn" class="schedule-nav-btn" aria-label="Próximo dia">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                    <input type="date" id="schedule-date-input" class="rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                </div>
+
+                <div>
+                    <h3 id="schedule-title" class="text-lg font-bold text-gray-900 dark:text-white"></h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Clique em um horário para agendar, ou arraste na mesma sala para selecionar um período.</p>
+                </div>
+            </div>
+
+            <div id="week-strip" class="grid grid-cols-7 gap-1 p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"></div>
+
+            <div id="schedule-loading" class="hidden p-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                Carregando agenda...
+            </div>
+            <div id="schedule-empty" class="hidden p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                Nenhuma sala ativa encontrada para montar a agenda.
+            </div>
+            <div id="schedule-grid-wrapper" class="overflow-auto max-h-[70vh]">
+                <div id="schedule-grid" class="schedule-grid"></div>
+            </div>
         </div>
 
         <!-- Legenda -->
@@ -147,13 +179,57 @@
     @endpush
 
     @push('scripts')
-        <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+        @php
+            $scheduleRooms = $rooms->map(function ($room) {
+                return [
+                    'id' => $room->id,
+                    'name' => $room->name,
+                    'capacity' => $room->capacity ?? 1,
+                ];
+            })->values();
+
+            $scheduleProfessionals = $professionals->map(function ($professional) {
+                return [
+                    'id' => $professional->id,
+                    'name' => $professional->name,
+                    'calendar_color' => $professional->calendar_color ?? '#3b82f6',
+                ];
+            })->values();
+
+            $scheduleServiceTypes = $serviceTypes->map(function ($service) {
+                return [
+                    'id' => $service->id,
+                    'name' => $service->name,
+                    'duration_in_minutes' => $service->duration_in_minutes ?? 60,
+                ];
+            })->values();
+        @endphp
+
         <script>
-            let calendar;
+            const rooms = @json($scheduleRooms);
+            const professionals = @json($scheduleProfessionals);
+            const serviceTypes = @json($scheduleServiceTypes);
+
+            const slotStepMinutes = 30;
+            const scheduleStartMinutes = 6 * 60;
+            const scheduleEndMinutes = 22 * 60;
+            const activeStatuses = ['scheduled', 'confirmed', 'completed'];
+            const statusLabels = {
+                scheduled: 'Agendado',
+                confirmed: 'Confirmado',
+                completed: 'Concluído',
+                canceled: 'Cancelado',
+                no_show: 'Faltou',
+            };
+
             let selectedRoomId = null;
+            let selectedDate = new Date();
             let modal;
+            let appointments = [];
+            let dragSelection = null;
 
             document.addEventListener('DOMContentLoaded', function() {
+                selectedDate = stripTime(selectedDate);
                 const $modalElement = document.getElementById('appointment-modal');
                 if (window.Modal) {
                     modal = new Modal($modalElement, {
@@ -172,65 +248,21 @@
                     });
                 }
 
-                const calendarEl = document.getElementById('calendar');
-                calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'timeGridDay',
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                    },
-                    locale: 'pt-br',
-                    buttonText: {
-                        today: 'Hoje',
-                        month: 'Mês',
-                        week: 'Semana',
-                        day: 'Dia',
-                        list: 'Lista'
-                    },
-                    slotMinTime: '06:00:00',
-                    slotMaxTime: '22:00:00',
-                    height: 'auto',
-                    expandRows: false,
-
-                    allDaySlot: false,
-                    editable: true,
-                    selectable: true,
-                    nowIndicator: true,
-                    businessHours: {
-                        daysOfWeek: [1, 2, 3, 4, 5, 6],
-                        startTime: '07:00',
-                        endTime: '21:00',
-                    },
-                    events: function(fetchInfo, successCallback, failureCallback) {
-                        let url = '{{ route('appointments.index') }}?start=' + fetchInfo.startStr + '&end=' + fetchInfo.endStr;
-                        if (selectedRoomId) url += '&room_id=' + selectedRoomId;
-
-                        fetch(url, {
-                            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
-                        })
-                            .then(response => response.json())
-                            .then(data => successCallback(data))
-                            .catch(error => {
-                                console.error('Error fetching events:', error);
-                                failureCallback(error);
-                            });
-                    },
-                    select: function(info) {
-                        openNewAppointmentModal(info.startStr, info.endStr);
-                    },
-                    eventClick: function(info) {
-                        openEditAppointmentModal(info.event);
-                    },
-                    eventDrop: function(info) {
-                        updateAppointmentTime(info.event);
-                    },
-                    eventResize: function(info) {
-                        updateAppointmentTime(info.event);
+                document.getElementById('prev-day-btn').addEventListener('click', () => changeSelectedDate(addDays(selectedDate, -1)));
+                document.getElementById('next-day-btn').addEventListener('click', () => changeSelectedDate(addDays(selectedDate, 1)));
+                document.getElementById('today-btn').addEventListener('click', () => changeSelectedDate(new Date()));
+                document.getElementById('schedule-date-input').addEventListener('change', (event) => {
+                    if (event.target.value) {
+                        changeSelectedDate(parseDateKey(event.target.value));
                     }
                 });
-                calendar.render();
 
+                bindScheduleGridEvents();
+                bindAppointmentForm();
+                loadAppointments();
+            });
+
+            function bindAppointmentForm() {
                 document.getElementById('appointment-form').addEventListener('submit', function(e) {
                     e.preventDefault();
                     const submitBtn = document.getElementById('submit-btn');
@@ -240,11 +272,6 @@
 
                     const formData = new FormData(this);
                     const action = this.action;
-
-                    const formatDateToSQL = (dateStr) => {
-                        if (!dateStr) return '';
-                        return dateStr.replace('T', ' ') + ':00';
-                    };
 
                     if (formData.has('start_time')) {
                         formData.set('start_time', formatDateToSQL(formData.get('start_time')));
@@ -266,8 +293,8 @@
                             const data = await response.json();
                             if (response.ok) {
                                 if (modal) modal.hide();
-                                calendar.refetchEvents();
                                 this.reset();
+                                await loadAppointments();
                             } else {
                                 let errorMessage = data.message || 'Erro ao salvar agendamento.';
                                 if (data.errors) {
@@ -295,55 +322,223 @@
                             submitBtn.innerText = originalText;
                         });
                 });
-            });
+            }
 
-            function updateAppointmentTime(event) {
-                const formData = new FormData();
-                formData.append('_token', '{{ csrf_token() }}');
-                formData.append('_method', 'PUT');
+            function bindScheduleGridEvents() {
+                const grid = document.getElementById('schedule-grid');
 
-                const offset = event.start.getTimezoneOffset() * 60000;
-                const localStart = new Date(event.start.getTime() - offset).toISOString().substring(0, 19).replace('T', ' ');
-                const localEnd = event.end ? new Date(event.end.getTime() - offset).toISOString().substring(0, 19).replace('T', ' ') : '';
+                grid.addEventListener('click', (event) => {
+                    const appointmentButton = event.target.closest('[data-appointment-id]');
+                    if (appointmentButton) {
+                        const appointment = appointments.find(item => item.id === Number(appointmentButton.dataset.appointmentId));
+                        if (appointment) openEditAppointmentModal(appointment);
+                        return;
+                    }
 
-                formData.append('start_time', localStart);
-                formData.append('end_time', localEnd);
-
-                fetch('{{ url('appointments') }}/' + event.id, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: formData
-                })
-                    .then(async response => {
-                        const data = await response.json();
-                        if (!response.ok) {
-                            let errorMessage = data.message || 'Erro ao mover agendamento.';
-                            if (data.errors) {
-                                errorMessage = Object.values(data.errors).flat().join('\n');
-                            }
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Erro ao mover',
-                                text: errorMessage,
-                                confirmButtonColor: '#10b981',
-                            });
-                            calendar.refetchEvents();
+                    const addButton = event.target.closest('.schedule-add-btn');
+                    if (addButton) {
+                        const slot = getSlotByIndex(Number(addButton.dataset.slotIndex));
+                        const roomId = Number(addButton.dataset.roomId);
+                        const end = getDefaultEnd(slot.start);
+                        if (!canAddToRange(roomId, slot.start, end)) {
+                            showCapacityAlert();
+                            return;
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro',
-                            text: 'Erro na comunicação com o servidor.',
-                            confirmButtonColor: '#10b981',
-                        });
-                        calendar.refetchEvents();
+                        openNewAppointmentModal(slot.start, end, roomId);
+                    }
+                });
+
+                grid.addEventListener('pointerdown', (event) => {
+                    if (event.target.closest('[data-appointment-id], .schedule-add-btn')) return;
+
+                    const cell = event.target.closest('.schedule-cell');
+                    if (!cell) return;
+
+                    dragSelection = {
+                        roomId: Number(cell.dataset.roomId),
+                        startIndex: Number(cell.dataset.slotIndex),
+                        endIndex: Number(cell.dataset.slotIndex),
+                    };
+                    grid.setPointerCapture?.(event.pointerId);
+                    paintSelection();
+                });
+
+                grid.addEventListener('pointerover', (event) => {
+                    if (!dragSelection) return;
+
+                    const cell = event.target.closest('.schedule-cell');
+                    if (!cell || Number(cell.dataset.roomId) !== dragSelection.roomId) return;
+
+                    dragSelection.endIndex = Number(cell.dataset.slotIndex);
+                    paintSelection();
+                });
+
+                grid.addEventListener('pointerup', () => finishSelection());
+                grid.addEventListener('pointercancel', () => clearSelection());
+            }
+
+            function finishSelection() {
+                if (!dragSelection) return;
+
+                const startIndex = Math.min(dragSelection.startIndex, dragSelection.endIndex);
+                const endIndex = Math.max(dragSelection.startIndex, dragSelection.endIndex);
+                const startSlot = getSlotByIndex(startIndex);
+                const endSlot = getSlotByIndex(endIndex);
+                const start = startSlot.start;
+                const end = startIndex === endIndex ? getDefaultEnd(start) : endSlot.end;
+                const roomId = dragSelection.roomId;
+
+                clearSelection();
+
+                if (!canAddToRange(roomId, start, end)) {
+                    showCapacityAlert();
+                    return;
+                }
+
+                openNewAppointmentModal(start, end, roomId);
+            }
+
+            function changeSelectedDate(date) {
+                selectedDate = stripTime(date);
+                loadAppointments();
+            }
+
+            async function loadAppointments() {
+                setLoading(true);
+
+                const start = `${dateKey(selectedDate)}T00:00:00`;
+                const end = `${dateKey(addDays(selectedDate, 1))}T00:00:00`;
+                let url = `{{ route('appointments.index') }}?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+                if (selectedRoomId) url += `&room_id=${selectedRoomId}`;
+
+                try {
+                    const response = await fetch(url, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
                     });
+                    const data = await response.json();
+                    appointments = data.map(normalizeAppointment);
+                    renderSchedule();
+                } catch (error) {
+                    console.error('Error fetching appointments:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro',
+                        text: 'Não foi possível carregar a agenda.',
+                        confirmButtonColor: '#10b981',
+                    });
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            function renderSchedule() {
+                renderScheduleHeader();
+                renderWeekStrip();
+
+                const grid = document.getElementById('schedule-grid');
+                const visibleRooms = getVisibleRooms();
+
+                document.getElementById('schedule-empty').classList.toggle('hidden', visibleRooms.length > 0);
+                document.getElementById('schedule-grid-wrapper').classList.toggle('hidden', visibleRooms.length === 0);
+
+                if (visibleRooms.length === 0) {
+                    grid.innerHTML = '';
+                    return;
+                }
+
+                grid.style.gridTemplateColumns = `76px repeat(${visibleRooms.length}, minmax(220px, 1fr))`;
+
+                const slots = getSlots();
+                let html = '<div class="schedule-corner schedule-sticky-cell"></div>';
+                visibleRooms.forEach(room => {
+                    html += `
+                        <div class="schedule-room-header schedule-sticky-cell">
+                            <span class="schedule-room-name">${escapeHtml(room.name)}</span>
+                            <span class="schedule-room-capacity">cap. ${room.capacity}</span>
+                        </div>
+                    `;
+                });
+
+                slots.forEach((slot, slotIndex) => {
+                    html += `<div class="schedule-time-cell">${formatTime(slot.start)}</div>`;
+
+                    visibleRooms.forEach(room => {
+                        const overlapCount = countRoomAppointments(room.id, slot.start, slot.end);
+                        const isFull = overlapCount >= Number(room.capacity || 1);
+                        const slotAppointments = appointments
+                            .filter(appointment => appointment.room_id === room.id && appointment.start >= slot.start && appointment.start < slot.end)
+                            .sort((a, b) => a.start - b.start);
+
+                        html += `
+                            <div class="schedule-cell ${isFull ? 'is-full' : ''}" data-room-id="${room.id}" data-slot-index="${slotIndex}">
+                                <div class="schedule-cell-meta">
+                                    <span class="capacity-badge ${isFull ? 'is-full' : ''}">${overlapCount}/${room.capacity}</span>
+                                    ${isFull ? '' : `
+                                        <button type="button" class="schedule-add-btn" data-room-id="${room.id}" data-slot-index="${slotIndex}" title="Adicionar paciente neste horário">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                            </svg>
+                                        </button>
+                                    `}
+                                </div>
+                                <div class="schedule-appointments">
+                                    ${slotAppointments.map(renderAppointmentChip).join('')}
+                                </div>
+                            </div>
+                        `;
+                    });
+                });
+
+                grid.innerHTML = html;
+            }
+
+            function renderScheduleHeader() {
+                document.getElementById('schedule-title').innerText = selectedDate.toLocaleDateString('pt-BR', {
+                    weekday: 'long',
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                });
+                document.getElementById('schedule-date-input').value = dateKey(selectedDate);
+            }
+
+            function renderWeekStrip() {
+                const strip = document.getElementById('week-strip');
+                const weekStart = addDays(selectedDate, -((selectedDate.getDay() + 6) % 7));
+                let html = '';
+
+                for (let index = 0; index < 7; index++) {
+                    const day = addDays(weekStart, index);
+                    const isSelected = dateKey(day) === dateKey(selectedDate);
+                    const isToday = dateKey(day) === dateKey(new Date());
+                    html += `
+                        <button type="button" class="week-day-btn ${isSelected ? 'is-selected' : ''} ${isToday ? 'is-today' : ''}" data-date="${dateKey(day)}">
+                            <span>${day.toLocaleDateString('pt-BR', { weekday: 'short' })}</span>
+                            <strong>${day.toLocaleDateString('pt-BR', { day: '2-digit' })}</strong>
+                        </button>
+                    `;
+                }
+
+                strip.innerHTML = html;
+                strip.querySelectorAll('[data-date]').forEach(button => {
+                    button.addEventListener('click', () => changeSelectedDate(parseDateKey(button.dataset.date)));
+                });
+            }
+
+            function renderAppointmentChip(appointment) {
+                const color = appointment.status === 'canceled'
+                    ? '#ef4444'
+                    : (appointment.status === 'no_show' ? '#f97316' : sanitizeColor(appointment.backgroundColor));
+                const status = statusLabels[appointment.status] || appointment.status;
+
+                return `
+                    <button type="button" class="appointment-chip ${appointment.status === 'canceled' ? 'is-canceled' : ''}"
+                            style="--appointment-color: ${color}" data-appointment-id="${appointment.id}">
+                        <span class="appointment-chip-main">${escapeHtml(appointment.patient_name)}</span>
+                        <span class="appointment-chip-detail">${formatTime(appointment.start)}-${formatTime(appointment.end)} · ${escapeHtml(appointment.professional_name)}</span>
+                        <span class="appointment-chip-status">${escapeHtml(status)}</span>
+                    </button>
+                `;
             }
 
             function filterRoom(roomId) {
@@ -357,135 +552,209 @@
                         btn.classList.add('bg-white', 'text-gray-700', 'dark:bg-gray-800', 'dark:text-gray-300', 'border', 'border-gray-200');
                     }
                 });
-                calendar.refetchEvents();
+                loadAppointments();
             }
 
-            function openNewAppointmentModal(start, end) {
+            function openNewAppointmentModal(start, end, roomId = null) {
+                const visibleRooms = getVisibleRooms();
+                const resolvedRoomId = roomId || selectedRoomId || visibleRooms[0]?.id || rooms[0]?.id || '';
+                const startDate = start ? new Date(start) : getDefaultStart();
+                const endDate = end ? new Date(end) : getDefaultEnd(startDate);
+                const selectedRoom = rooms.find(room => room.id === Number(resolvedRoomId));
+
                 document.getElementById('modal-title').innerText = 'Novo Agendamento';
                 document.getElementById('appointment-form').action = '{{ route('appointments.store') }}';
-
-                const existingMethod = document.getElementById('appointment-form').querySelector('input[name="_method"]');
-                if (existingMethod) existingMethod.remove();
-
+                removeMethodInput();
+                document.getElementById('submit-btn').classList.remove('hidden');
                 document.getElementById('cancel-appointment-btn').classList.add('hidden');
 
-                let startVal = '';
-                let endVal = '';
-
-                if (start) {
-                    const startDate = new Date(start);
-                    startVal = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString().substring(0, 16);
-                }
-                if (end) {
-                    const endDate = new Date(end);
-                    endVal = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString().substring(0, 16);
-                }
-
                 const content = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2 relative">
-                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Paciente <span class="text-red-500">*</span></label>
-                        <input type="text" id="patient_search" placeholder="Digite pelo menos 3 caracteres para buscar..." autocomplete="off"
-                               class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
-                        <input type="hidden" name="patient_id" id="selected_patient_id" required>
-                        <div id="patient_results" class="hidden absolute z-[80] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-48 overflow-y-auto"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
+                            <p class="text-sm font-semibold text-emerald-900 dark:text-emerald-100">${escapeHtml(selectedRoom?.name || 'Sala')}</p>
+                            <p id="appointment-range-preview" data-room-suffix="${selectedRoom ? ` · capacidade ${selectedRoom.capacity}` : ''}" class="text-xs text-emerald-700 dark:text-emerald-300">${formatDateTimeRange(startDate, endDate)}${selectedRoom ? ` · capacidade ${selectedRoom.capacity}` : ''}</p>
+                        </div>
+                        <div class="md:col-span-2 relative">
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Paciente <span class="text-red-500">*</span></label>
+                            <input type="text" id="patient_search" placeholder="Digite pelo menos 3 caracteres para buscar..." autocomplete="off"
+                                   class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                            <input type="hidden" name="patient_id" id="selected_patient_id" required>
+                            <div id="patient_results" class="hidden absolute z-[80] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-48 overflow-y-auto"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Profissional <span class="text-red-500">*</span></label>
+                            <select name="professional_id" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                                ${professionals.map(professional => `<option value="${professional.id}">${escapeHtml(professional.name)}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Sala <span class="text-red-500">*</span></label>
+                            <select name="room_id" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                                ${rooms.map(room => `<option value="${room.id}" ${Number(resolvedRoomId) === room.id ? 'selected' : ''}>${escapeHtml(room.name)} · cap. ${room.capacity}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Serviço <span class="text-red-500">*</span></label>
+                            <select name="service_type_id" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                                ${serviceTypes.map(service => `<option value="${service.id}" data-duration="${service.duration_in_minutes}">${escapeHtml(service.name)} (${service.duration_in_minutes} min)</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Início <span class="text-red-500">*</span></label>
+                            <input type="datetime-local" name="start_time" value="${toLocalInputValue(startDate)}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Fim <span class="text-red-500">*</span></label>
+                            <input type="datetime-local" name="end_time" value="${toLocalInputValue(endDate)}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                        </div>
                     </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Início <span class="text-red-500">*</span></label>
-                <input type="datetime-local" name="start_time" value="${startVal}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Fim <span class="text-red-500">*</span></label>
-                        <input type="datetime-local" name="end_time" value="${endVal}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Profissional <span class="text-red-500">*</span></label>
-                        <select name="professional_id" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
-                            @foreach($professionals as $prof)
-                <option value="{{ $prof->id }}">{{ $prof->name }}</option>
-                            @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Sala <span class="text-red-500">*</span></label>
-                <select name="room_id" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
-@foreach($rooms as $room)
-                <option value="{{ $room->id }}" ${selectedRoomId == {{ $room->id }} ? 'selected' : ''}>{{ $room->name }}</option>
-                            @endforeach
-                </select>
-            </div>
-            <div class="md:col-span-2">
-                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Serviço <span class="text-red-500">*</span></label>
-                <select name="service_type_id" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
-@foreach($serviceTypes as $service)
-                <option value="{{ $service->id }}">{{ $service->name }} ({{ $service->duration_in_minutes }} min)</option>
-                            @endforeach
-                </select>
-            </div>
-        </div>
-`;
+                `;
                 document.getElementById('modal-form-content').innerHTML = content;
-                if (modal) modal.show();
-
-                // Inicializar busca de pacientes
+                bindServiceDurationSync();
                 initPatientSearch();
+                if (modal) modal.show();
             }
 
-            function openEditAppointmentModal(event) {
-                const props = event.extendedProps;
-                document.getElementById('modal-title').innerText = 'Detalhes / Reagendar';
-                document.getElementById('appointment-form').action = '{{ url('appointments') }}/' + event.id;
-
-                const existingMethod = document.getElementById('appointment-form').querySelector('input[name="_method"]');
-                if (existingMethod) existingMethod.remove();
-
-                const methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'PUT';
-                document.getElementById('appointment-form').appendChild(methodInput);
-
-                document.getElementById('cancel-appointment-btn').classList.remove('hidden');
-                document.getElementById('cancel-appointment-btn').onclick = () => cancelAppointment(event.id);
-
-                const startStr = event.start ? new Date(event.start.getTime() - event.start.getTimezoneOffset() * 60000).toISOString().substring(0, 16) : '';
-                const endStr = event.end ? new Date(event.end.getTime() - event.end.getTimezoneOffset() * 60000).toISOString().substring(0, 16) : '';
+            function openEditAppointmentModal(appointment) {
+                const props = appointment.extendedProps || appointment;
+                document.getElementById('modal-title').innerText = 'Detalhes do Agendamento';
+                document.getElementById('appointment-form').action = '{{ url('appointments') }}/' + appointment.id;
+                removeMethodInput();
+                document.getElementById('submit-btn').classList.add('hidden');
+                document.getElementById('cancel-appointment-btn').classList.add('hidden');
 
                 const content = `
-                <div class="space-y-4">
-                    <div class="p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl border border-gray-200 dark:border-gray-600">
-                        <p class="text-sm font-bold text-gray-900 dark:text-white">${props.patient_name}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">${props.service_name} com ${props.professional_name}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Sala: ${props.room_name} | Status: ${props.status}</p>
-                    </div>
-
-                    <input type="hidden" name="professional_id" value="${props.professional_id}">
-                    <input type="hidden" name="room_id" value="${props.room_id}">
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Novo Horário Início</label>
-                            <input type="datetime-local" name="start_time" value="${startStr}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                    <div class="space-y-4">
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
+                            <p class="text-sm font-bold text-gray-900 dark:text-white">${escapeHtml(props.patient_name)}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">${escapeHtml(props.service_name)} com ${escapeHtml(props.professional_name)}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Sala: ${escapeHtml(props.room_name)} · ${formatDateTimeRange(appointment.start, appointment.end)} · ${escapeHtml(statusLabels[props.status] || props.status)}</p>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Novo Horário Fim</label>
-                            <input type="datetime-local" name="end_time" value="${endStr}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <button type="button" onclick="markAppointmentStatus(${appointment.id}, 'completed')" class="inline-flex justify-center items-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase">
+                                Presença
+                            </button>
+                            <button type="button" onclick="markAppointmentStatus(${appointment.id}, 'no_show')" class="inline-flex justify-center items-center gap-2 px-3 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold uppercase">
+                                Falta
+                            </button>
+                            <button type="button" onclick="removeAppointment(${appointment.id})" class="inline-flex justify-center items-center gap-2 px-3 py-2 rounded-xl bg-gray-700 hover:bg-gray-800 text-white text-xs font-bold uppercase">
+                                Desmarcar
+                            </button>
                         </div>
+
+                        ${props.notes ? `
+                            <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600">
+                                <p class="text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">Observações registradas</p>
+                                <p class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-line">${escapeHtml(props.notes)}</p>
+                            </div>
+                        ` : ''}
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Observações / Motivo</label>
-                        <textarea name="notes" rows="3" class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm resize-y">${props.notes || ''}</textarea>
-                    </div>
-                </div>
-            `;
+                `;
                 document.getElementById('modal-form-content').innerHTML = content;
                 if (modal) modal.show();
+            }
+
+            function markAppointmentStatus(id, status) {
+                const statusTitle = status === 'completed' ? 'Marcar presença?' : 'Registrar falta?';
+                const statusText = status === 'completed'
+                    ? 'Esta ação irá consumir uma sessão realizada do pacote do paciente, quando houver pacote ativo.'
+                    : 'Esta ação irá consumir uma sessão perdida do pacote do paciente, quando houver pacote ativo.';
+
+                Swal.fire({
+                    title: statusTitle,
+                    text: statusText,
+                    icon: status === 'completed' ? 'question' : 'warning',
+                    input: status === 'no_show' ? 'textarea' : undefined,
+                    inputPlaceholder: 'Observação opcional...',
+                    showCancelButton: true,
+                    confirmButtonColor: status === 'completed' ? '#059669' : '#ea580c',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Confirmar',
+                    cancelButtonText: 'Voltar',
+                }).then((result) => {
+                    if (!result.isConfirmed) return;
+
+                    const payload = { status };
+                    if (typeof result.value === 'string' && result.value.trim() !== '') {
+                        payload.notes = result.value.trim();
+                    }
+
+                    fetch('/appointments/' + id + '/status', {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    })
+                        .then(async response => {
+                            const data = await response.json();
+                            if (!response.ok) {
+                                throw new Error(data.message || 'Não foi possível atualizar o status.');
+                            }
+
+                            if (modal) modal.hide();
+                            await loadAppointments();
+                            Swal.fire('Atualizado!', data.message || 'Status atualizado com sucesso.', 'success');
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Erro',
+                                text: error.message,
+                                confirmButtonColor: '#10b981',
+                            });
+                        });
+                });
+            }
+
+            function removeAppointment(id) {
+                Swal.fire({
+                    title: 'Desmarcar este agendamento?',
+                    text: 'O horário será removido da agenda. Se já consumiu pacote, a sessão será estornada.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#374151',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Desmarcar',
+                    cancelButtonText: 'Voltar',
+                }).then((result) => {
+                    if (!result.isConfirmed) return;
+
+                    fetch('/appointments/' + id, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    })
+                        .then(async response => {
+                            const data = await response.json();
+                            if (!response.ok) {
+                                throw new Error(data.message || 'Não foi possível desmarcar o agendamento.');
+                            }
+
+                            if (modal) modal.hide();
+                            await loadAppointments();
+                            Swal.fire('Desmarcado!', data.message || 'Agendamento desmarcado com sucesso.', 'success');
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Erro',
+                                text: error.message,
+                                confirmButtonColor: '#10b981',
+                            });
+                        });
+                });
             }
 
             function cancelAppointment(id) {
                 Swal.fire({
                     title: 'Deseja realmente cancelar este agendamento?',
-                    text: "Esta ação não pode ser revertida!",
+                    text: 'Esta ação não pode ser revertida!',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
@@ -517,14 +786,10 @@
                                     body: JSON.stringify({ status: 'canceled', notes: noteResult.value })
                                 })
                                     .then(response => response.json())
-                                    .then(data => {
+                                    .then(async () => {
                                         if (modal) modal.hide();
-                                        calendar.refetchEvents();
-                                        Swal.fire(
-                                            'Cancelado!',
-                                            'O agendamento foi cancelado com sucesso.',
-                                            'success'
-                                        );
+                                        await loadAppointments();
+                                        Swal.fire('Cancelado!', 'O agendamento foi cancelado com sucesso.', 'success');
                                     });
                             }
                         });
@@ -532,19 +797,18 @@
                 });
             }
 
-            function closeModal() {
-                if (modal) modal.hide();
-            }
-
             function initPatientSearch() {
                 const searchInput = document.getElementById('patient_search');
                 const resultsDiv = document.getElementById('patient_results');
                 const patientIdInput = document.getElementById('selected_patient_id');
+                if (!searchInput || !resultsDiv || !patientIdInput) return;
+
                 let timeout = null;
 
                 searchInput.addEventListener('input', function() {
                     clearTimeout(timeout);
-                    const query = this.value;
+                    const query = this.value.trim();
+                    patientIdInput.value = '';
 
                     if (query.length < 3) {
                         resultsDiv.innerHTML = '';
@@ -553,7 +817,7 @@
                     }
 
                     timeout = setTimeout(() => {
-                        fetch(`{{ route('patients.search') }}?q=${query}`, {
+                        fetch(`{{ route('patients.search') }}?q=${encodeURIComponent(query)}`, {
                             headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
                         })
                         .then(response => response.json())
@@ -579,228 +843,592 @@
                         });
                     }, 300);
                 });
+            }
 
-                // Fechar resultados ao clicar fora
-                document.addEventListener('click', function(e) {
-                    if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
-                        resultsDiv.classList.add('hidden');
+            document.addEventListener('click', function(e) {
+                const searchInput = document.getElementById('patient_search');
+                const resultsDiv = document.getElementById('patient_results');
+                if (searchInput && resultsDiv && !searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+                    resultsDiv.classList.add('hidden');
+                }
+            });
+
+            function bindServiceDurationSync() {
+                const serviceSelect = document.querySelector('select[name="service_type_id"]');
+                const startInput = document.querySelector('input[name="start_time"]');
+                const endInput = document.querySelector('input[name="end_time"]');
+                const rangePreview = document.getElementById('appointment-range-preview');
+                if (!serviceSelect || !startInput || !endInput) return;
+
+                let endWasEdited = false;
+
+                const updateRangePreview = () => {
+                    if (!rangePreview || !startInput.value || !endInput.value) return;
+                    rangePreview.innerText = `${formatDateTimeRange(new Date(startInput.value), new Date(endInput.value))}${rangePreview.dataset.roomSuffix || ''}`;
+                };
+
+                const updateEndFromService = (force = false) => {
+                    if (endWasEdited && !force) {
+                        updateRangePreview();
+                        return;
+                    }
+
+                    const duration = Number(serviceSelect.selectedOptions[0]?.dataset.duration || 60);
+                    if (startInput.value) {
+                        endInput.value = toLocalInputValue(addMinutes(new Date(startInput.value), duration));
+                    }
+                    updateRangePreview();
+                };
+
+                serviceSelect.addEventListener('change', () => {
+                    endWasEdited = false;
+                    updateEndFromService(true);
+                });
+
+                startInput.addEventListener('change', () => {
+                    updateEndFromService(false);
+                });
+
+                endInput.addEventListener('change', () => {
+                    endWasEdited = true;
+                    updateRangePreview();
+                });
+            }
+
+            function normalizeAppointment(item) {
+                const props = item.extendedProps || {};
+
+                return {
+                    id: Number(item.id),
+                    title: item.title,
+                    start: new Date(item.start),
+                    end: new Date(item.end),
+                    backgroundColor: item.backgroundColor || '#3b82f6',
+                    patient_id: Number(props.patient_id),
+                    patient_name: props.patient_name || item.title,
+                    professional_id: Number(props.professional_id),
+                    professional_name: props.professional_name || '',
+                    room_id: Number(props.room_id),
+                    room_name: props.room_name || '',
+                    service_type_id: Number(props.service_type_id),
+                    service_name: props.service_name || '',
+                    status: props.status || 'scheduled',
+                    notes: props.notes || '',
+                };
+            }
+
+            function countRoomAppointments(roomId, start, end) {
+                return appointments.filter(appointment => (
+                    appointment.room_id === Number(roomId) &&
+                    activeStatuses.includes(appointment.status) &&
+                    appointment.start < end &&
+                    appointment.end > start
+                )).length;
+            }
+
+            function canAddToRange(roomId, start, end) {
+                const room = rooms.find(item => item.id === Number(roomId));
+                if (!room) return false;
+
+                return countRoomAppointments(room.id, start, end) < Number(room.capacity || 1);
+            }
+
+            function getVisibleRooms() {
+                if (!selectedRoomId) return rooms;
+                return rooms.filter(room => room.id === Number(selectedRoomId));
+            }
+
+            function getSlots() {
+                const slots = [];
+                for (let minutes = scheduleStartMinutes; minutes < scheduleEndMinutes; minutes += slotStepMinutes) {
+                    const start = dateAtMinutes(selectedDate, minutes);
+                    slots.push({
+                        start,
+                        end: addMinutes(start, slotStepMinutes),
+                    });
+                }
+                return slots;
+            }
+
+            function getSlotByIndex(index) {
+                return getSlots()[index];
+            }
+
+            function paintSelection() {
+                document.querySelectorAll('.schedule-cell.is-selecting').forEach(cell => cell.classList.remove('is-selecting'));
+                if (!dragSelection) return;
+
+                const startIndex = Math.min(dragSelection.startIndex, dragSelection.endIndex);
+                const endIndex = Math.max(dragSelection.startIndex, dragSelection.endIndex);
+                document.querySelectorAll(`.schedule-cell[data-room-id="${dragSelection.roomId}"]`).forEach(cell => {
+                    const cellIndex = Number(cell.dataset.slotIndex);
+                    if (cellIndex >= startIndex && cellIndex <= endIndex) {
+                        cell.classList.add('is-selecting');
                     }
                 });
+            }
+
+            function clearSelection() {
+                dragSelection = null;
+                document.querySelectorAll('.schedule-cell.is-selecting').forEach(cell => cell.classList.remove('is-selecting'));
+            }
+
+            function setLoading(isLoading) {
+                document.getElementById('schedule-loading').classList.toggle('hidden', !isLoading);
+            }
+
+            function showCapacityAlert() {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Sala sem vaga nesse período',
+                    text: 'Escolha outro horário, reduza o período ou selecione uma sala com capacidade disponível.',
+                    confirmButtonColor: '#10b981',
+                });
+            }
+
+            function closeModal() {
+                if (modal) modal.hide();
+            }
+
+            function removeMethodInput() {
+                const existingMethod = document.getElementById('appointment-form').querySelector('input[name="_method"]');
+                if (existingMethod) existingMethod.remove();
+            }
+
+            function getDefaultStart() {
+                const now = new Date();
+                const base = dateKey(now) === dateKey(selectedDate) ? now : dateAtMinutes(selectedDate, 7 * 60);
+                const roundedMinutes = Math.ceil((base.getHours() * 60 + base.getMinutes()) / slotStepMinutes) * slotStepMinutes;
+                return dateAtMinutes(selectedDate, Math.min(Math.max(roundedMinutes, scheduleStartMinutes), scheduleEndMinutes - slotStepMinutes));
+            }
+
+            function getDefaultEnd(start) {
+                const duration = Number(serviceTypes[0]?.duration_in_minutes || 60);
+                return addMinutes(start, duration);
+            }
+
+            function formatDateToSQL(dateStr) {
+                if (!dateStr) return '';
+                return dateStr.length === 16 ? `${dateStr.replace('T', ' ')}:00` : dateStr.replace('T', ' ');
+            }
+
+            function formatDateTimeRange(start, end) {
+                return `${start.toLocaleDateString('pt-BR')} · ${formatTime(start)}-${formatTime(end)}`;
+            }
+
+            function formatTime(date) {
+                return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            function toLocalInputValue(date) {
+                const offset = date.getTimezoneOffset() * 60000;
+                return new Date(date.getTime() - offset).toISOString().substring(0, 16);
+            }
+
+            function dateKey(date) {
+                const normalized = stripTime(date);
+                const year = normalized.getFullYear();
+                const month = String(normalized.getMonth() + 1).padStart(2, '0');
+                const day = String(normalized.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            function parseDateKey(value) {
+                const [year, month, day] = value.split('-').map(Number);
+                return new Date(year, month - 1, day);
+            }
+
+            function stripTime(date) {
+                return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            }
+
+            function dateAtMinutes(date, minutes) {
+                return new Date(date.getFullYear(), date.getMonth(), date.getDate(), Math.floor(minutes / 60), minutes % 60);
+            }
+
+            function addMinutes(date, minutes) {
+                return new Date(date.getTime() + minutes * 60000);
+            }
+
+            function addDays(date, days) {
+                const next = new Date(date);
+                next.setDate(next.getDate() + days);
+                return stripTime(next);
+            }
+
+            function escapeHtml(value) {
+                return String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function sanitizeColor(value) {
+                return /^#[0-9a-f]{3,8}$/i.test(value) ? value : '#3b82f6';
             }
         </script>
 
         <style>
-            /* FullCalendar - Tema Moderno */
-            :root {
-                --fc-border-color: #e5e7eb;
-                --fc-daygrid-event-dot-width: 8px;
-                --fc-button-bg-color: #10b981;
-                --fc-button-border-color: #10b981;
-                --fc-button-hover-bg-color: #059669;
-                --fc-button-hover-border-color: #059669;
-                --fc-button-active-bg-color: #047857;
-                --fc-button-active-border-color: #047857;
-            }
-
-            .dark {
-                --fc-border-color: #374151;
-                --fc-page-bg-color: #1f2937;
-                --fc-neutral-bg-color: #374151;
-                --fc-list-event-hover-bg-color: #4b5563;
-            }
-
-            .fc {
-                font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            }
-
-            .fc .fc-toolbar-title {
-                font-size: 1.25rem;
-                font-weight: 700;
-                color: #1f2937;
-            }
-
-            .dark .fc .fc-toolbar-title {
-                color: #f9fafb;
-            }
-
-            .fc .fc-button-primary {
-                background-color: var(--fc-button-bg-color);
-                border-color: var(--fc-button-border-color);
+            .schedule-nav-btn,
+            .schedule-action-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 2.5rem;
                 border-radius: 0.75rem;
+                border: 1px solid #d1d5db;
+                background: #ffffff;
+                color: #374151;
+                font-size: 0.875rem;
                 font-weight: 600;
-                font-size: 0.75rem;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                padding: 0.5rem 1rem;
-                transition: all 0.2s ease;
-                box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);
+                transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
             }
 
-            .fc .fc-button-primary:hover {
-                background-color: var(--fc-button-hover-bg-color);
-                border-color: var(--fc-button-hover-border-color);
-                transform: scale(1.02);
-                box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+            .schedule-nav-btn {
+                width: 2.5rem;
             }
 
-            .fc .fc-button-primary:disabled {
-                background-color: #9ca3af;
-                border-color: #9ca3af;
+            .schedule-action-btn {
+                padding: 0 1rem;
             }
 
-            .fc .fc-button-primary:focus {
-                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4);
+            .schedule-nav-btn:hover,
+            .schedule-action-btn:hover {
+                border-color: #10b981;
+                color: #047857;
             }
 
-            .fc .fc-button-primary.fc-button-active {
-                background-color: var(--fc-button-active-bg-color);
-                border-color: var(--fc-button-active-border-color);
-            }
-
-            .fc-theme-standard td,
-            .fc-theme-standard th,
-            .fc-theme-standard .fc-scrollgrid {
-                border-color: var(--fc-border-color);
-            }
-
-            .fc-theme-standard .fc-list {
-                border-color: var(--fc-border-color);
-            }
-
-            .fc-list-day-cushion {
-                background-color: #f3f4f6;
-            }
-
-            .dark .fc-list-day-cushion {
-                background-color: #374151;
-            }
-
-            .fc-col-header-cell-cushion,
-            .fc-daygrid-day-number,
-            .fc-timegrid-slot-label-cushion,
-            .fc-list-day-text,
-            .fc-list-day-side-text {
-                color: #4b5563;
-                font-weight: 500;
-            }
-
-            .dark .fc-col-header-cell-cushion,
-            .dark .fc-daygrid-day-number,
-            .dark .fc-timegrid-slot-label-cushion,
-            .dark .fc-list-day-text,
-            .dark .fc-list-day-side-text {
+            .dark .schedule-nav-btn,
+            .dark .schedule-action-btn {
+                border-color: #4b5563;
+                background: #1f2937;
                 color: #d1d5db;
             }
 
-            .fc-day-today {
-                background-color: #f0fdf4 !important;
-            }
-
-            .dark .fc-day-today {
-                background-color: #064e3b !important;
-            }
-
-            .fc-timegrid-event {
+            .week-day-btn {
+                display: flex;
+                min-width: 0;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.125rem;
                 border-radius: 0.75rem;
-                padding: 2px 4px;
-                border: none;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                border: 1px solid transparent;
+                padding: 0.5rem 0.25rem;
+                color: #6b7280;
+                transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
             }
 
-            .fc-timegrid-event .fc-event-title {
+            .week-day-btn span {
+                font-size: 0.7rem;
+                text-transform: uppercase;
+            }
+
+            .week-day-btn strong {
+                color: #111827;
+                font-size: 0.95rem;
+            }
+
+            .week-day-btn.is-selected {
+                border-color: #10b981;
+                background: #ecfdf5;
+                color: #047857;
+            }
+
+            .week-day-btn.is-today:not(.is-selected) {
+                background: #f3f4f6;
+            }
+
+            .dark .week-day-btn {
+                color: #9ca3af;
+            }
+
+            .dark .week-day-btn strong {
+                color: #f9fafb;
+            }
+
+            .dark .week-day-btn.is-selected {
+                border-color: #34d399;
+                background: rgba(6, 78, 59, 0.45);
+                color: #a7f3d0;
+            }
+
+            .dark .week-day-btn.is-today:not(.is-selected) {
+                background: #374151;
+            }
+
+            .schedule-grid {
+                display: grid;
+                min-width: 760px;
+                user-select: none;
+            }
+
+            .schedule-sticky-cell {
+                position: sticky;
+                top: 0;
+                z-index: 20;
+            }
+
+            .schedule-corner,
+            .schedule-room-header,
+            .schedule-time-cell,
+            .schedule-cell {
+                border-right: 1px solid #e5e7eb;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .dark .schedule-corner,
+            .dark .schedule-room-header,
+            .dark .schedule-time-cell,
+            .dark .schedule-cell {
+                border-color: #374151;
+            }
+
+            .schedule-corner,
+            .schedule-room-header {
+                min-height: 4rem;
+                background: #f9fafb;
+            }
+
+            .dark .schedule-corner,
+            .dark .schedule-room-header {
+                background: #111827;
+            }
+
+            .schedule-room-header {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 0.25rem;
+                padding: 0.75rem;
+            }
+
+            .schedule-room-name {
+                color: #111827;
+                font-size: 0.9rem;
+                font-weight: 700;
+                line-height: 1.1;
+            }
+
+            .schedule-room-capacity {
+                color: #6b7280;
+                font-size: 0.72rem;
                 font-weight: 600;
-                font-size: 0.75rem;
+                text-transform: uppercase;
             }
 
-            .fc-timegrid-event .fc-event-time {
-                font-size: 0.65rem;
-                opacity: 0.9;
+            .dark .schedule-room-name {
+                color: #f9fafb;
             }
 
-            .fc-daygrid-event {
+            .dark .schedule-room-capacity {
+                color: #9ca3af;
+            }
+
+            .schedule-time-cell {
+                position: sticky;
+                left: 0;
+                z-index: 10;
+                display: flex;
+                align-items: flex-start;
+                justify-content: center;
+                min-height: 5.5rem;
+                padding-top: 0.75rem;
+                background: #ffffff;
+                color: #6b7280;
+                font-size: 0.72rem;
+                font-weight: 700;
+            }
+
+            .dark .schedule-time-cell {
+                background: #1f2937;
+                color: #9ca3af;
+            }
+
+            .schedule-cell {
+                position: relative;
+                min-height: 5.5rem;
+                padding: 0.5rem;
+                background: #ffffff;
+                cursor: crosshair;
+                transition: background-color 0.15s ease, box-shadow 0.15s ease;
+            }
+
+            .schedule-cell:hover {
+                background: #f0fdf4;
+                box-shadow: inset 0 0 0 1px #34d399;
+            }
+
+            .schedule-cell.is-selecting {
+                background: #d1fae5;
+                box-shadow: inset 0 0 0 2px #10b981;
+            }
+
+            .schedule-cell.is-full {
+                background: #f9fafb;
+                cursor: not-allowed;
+            }
+
+            .schedule-cell.is-full:hover {
+                box-shadow: inset 0 0 0 1px #d1d5db;
+            }
+
+            .dark .schedule-cell {
+                background: #1f2937;
+            }
+
+            .dark .schedule-cell:hover {
+                background: rgba(6, 78, 59, 0.32);
+            }
+
+            .dark .schedule-cell.is-selecting {
+                background: rgba(16, 185, 129, 0.28);
+            }
+
+            .dark .schedule-cell.is-full {
+                background: #111827;
+            }
+
+            .schedule-cell-meta {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.5rem;
+                min-height: 1.5rem;
+            }
+
+            .capacity-badge {
+                display: inline-flex;
+                align-items: center;
+                min-height: 1.25rem;
+                border-radius: 999px;
+                background: #ecfdf5;
+                padding: 0 0.45rem;
+                color: #047857;
+                font-size: 0.68rem;
+                font-weight: 800;
+            }
+
+            .capacity-badge.is-full {
+                background: #fee2e2;
+                color: #b91c1c;
+            }
+
+            .dark .capacity-badge {
+                background: rgba(16, 185, 129, 0.16);
+                color: #a7f3d0;
+            }
+
+            .dark .capacity-badge.is-full {
+                background: rgba(239, 68, 68, 0.18);
+                color: #fecaca;
+            }
+
+            .schedule-add-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 1.5rem;
+                height: 1.5rem;
+                border-radius: 999px;
+                background: #10b981;
+                color: #ffffff;
+                opacity: 0.92;
+                transition: background-color 0.15s ease, transform 0.15s ease;
+            }
+
+            .schedule-add-btn:hover {
+                background: #059669;
+                transform: scale(1.04);
+            }
+
+            .schedule-appointments {
+                display: flex;
+                flex-direction: column;
+                gap: 0.375rem;
+                margin-top: 0.375rem;
+            }
+
+            .appointment-chip {
+                display: grid;
+                width: 100%;
+                gap: 0.125rem;
+                border-left: 4px solid var(--appointment-color);
                 border-radius: 0.5rem;
-                border: none;
-                padding: 2px 6px;
-                font-weight: 500;
-                font-size: 0.75rem;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                background: #f8fafc;
+                padding: 0.45rem 0.5rem;
+                text-align: left;
+                box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+                transition: transform 0.15s ease, box-shadow 0.15s ease;
             }
 
-            .fc-event {
-                cursor: pointer;
-                transition: all 0.2s ease;
+            .appointment-chip:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
             }
 
-            .fc-event:hover {
-                transform: scale(1.02);
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            .appointment-chip-main {
+                overflow: hidden;
+                color: #111827;
+                font-size: 0.78rem;
+                font-weight: 800;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
 
-            .fc-event.fc-event-canceled {
-                background-color: #ef4444 !important;
-                border-color: #ef4444 !important;
-                opacity: 0.8;
+            .appointment-chip-detail,
+            .appointment-chip-status {
+                overflow: hidden;
+                color: #6b7280;
+                font-size: 0.68rem;
+                font-weight: 600;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
 
-            .fc-event.fc-event-canceled .fc-event-title {
+            .appointment-chip.is-canceled {
+                opacity: 0.72;
+            }
+
+            .appointment-chip.is-canceled .appointment-chip-main {
                 text-decoration: line-through;
             }
 
-            .fc-popover {
-                border-radius: 0.75rem;
-                border: none;
-                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            .dark .appointment-chip {
+                background: #111827;
+                box-shadow: none;
             }
 
-            .fc-popover .fc-popover-header {
-                background-color: #f3f4f6;
-                border-radius: 0.75rem 0.75rem 0 0;
-                padding: 0.75rem 1rem;
+            .dark .appointment-chip-main {
+                color: #f9fafb;
             }
 
-            .dark .fc-popover .fc-popover-header {
-                background-color: #374151;
+            .dark .appointment-chip-detail,
+            .dark .appointment-chip-status {
+                color: #9ca3af;
             }
 
-            .fc-popover .fc-popover-body {
-                padding: 1rem;
+            #schedule-grid-wrapper::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
             }
 
-            /* Scrollbar personalizada para o calendário */
-            .fc-scroller::-webkit-scrollbar {
-                width: 4px;
-                height: 4px;
-            }
-
-            .fc-scroller::-webkit-scrollbar-track {
+            #schedule-grid-wrapper::-webkit-scrollbar-track {
                 background: transparent;
             }
 
-            .fc-scroller::-webkit-scrollbar-thumb {
+            #schedule-grid-wrapper::-webkit-scrollbar-thumb {
                 background: #d1d5db;
                 border-radius: 20px;
             }
 
-            .fc-scroller::-webkit-scrollbar-thumb:hover {
+            #schedule-grid-wrapper::-webkit-scrollbar-thumb:hover {
                 background: #9ca3af;
             }
 
-            .dark .fc-scroller::-webkit-scrollbar-thumb {
+            .dark #schedule-grid-wrapper::-webkit-scrollbar-thumb {
                 background: #4b5563;
-            }
-
-            .dark .fc-scroller::-webkit-scrollbar-thumb:hover {
-                background: #6b7280;
-            }
-
-            /* Indicador de now */
-            .fc-timegrid-now-indicator-line {
-                border-color: #ef4444;
-                border-width: 2px;
-            }
-
-            .fc-timegrid-now-indicator-arrow {
-                border-color: #ef4444;
             }
         </style>
     @endpush

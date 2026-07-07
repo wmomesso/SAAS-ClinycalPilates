@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Clinics\Finance;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Clinics\Finance\StoreReceivableRequest;
 use App\Models\Clinics\Clinic\Finance\BankAccount;
+use App\Models\Clinics\Clinic\Finance\PaymentMethod;
 use App\Models\Clinics\Clinic\Finance\Receivable;
+use App\Models\Clinics\Clinic\HealthInsurance\HealthInsurance;
 use App\Models\Clinics\Clinic\Patient\Patient;
 use Illuminate\Http\Request;
 
@@ -18,7 +20,7 @@ class ReceivableController extends Controller
 
     public function index()
     {
-        $receivables = Receivable::with(['bankAccount', 'patient'])->get();
+        $receivables = Receivable::with(['bankAccount', 'patient', 'paymentMethod', 'paymentSource'])->get();
 
         return view('finance.receivables.index', compact('receivables'));
     }
@@ -27,8 +29,10 @@ class ReceivableController extends Controller
     {
         $bankAccounts = BankAccount::where('is_active', true)->get();
         $patients = Patient::query()->get();
+        $healthInsurances = HealthInsurance::where('is_active', true)->orderBy('name')->get();
+        $paymentMethods = PaymentMethod::where('is_active', true)->orderBy('name')->get();
 
-        return view('finance.receivables.create', compact('bankAccounts', 'patients'));
+        return view('finance.receivables.create', compact('bankAccounts', 'patients', 'healthInsurances', 'paymentMethods'));
     }
 
     public function store(StoreReceivableRequest $request)
@@ -42,8 +46,10 @@ class ReceivableController extends Controller
     {
         $bankAccounts = BankAccount::where('is_active', true)->get();
         $patients = Patient::query()->get();
+        $healthInsurances = HealthInsurance::where('is_active', true)->orderBy('name')->get();
+        $paymentMethods = PaymentMethod::where('is_active', true)->orderBy('name')->get();
 
-        return view('finance.receivables.edit', compact('receivable', 'bankAccounts', 'patients'));
+        return view('finance.receivables.edit', compact('receivable', 'bankAccounts', 'patients', 'healthInsurances', 'paymentMethods'));
     }
 
     public function update(StoreReceivableRequest $request, Receivable $receivable)

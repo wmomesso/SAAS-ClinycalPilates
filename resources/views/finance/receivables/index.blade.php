@@ -60,9 +60,10 @@
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
                 <th scope="col" class="px-6 py-3">Descrição</th>
-                <th scope="col" class="px-6 py-3">Paciente</th>
+                <th scope="col" class="px-6 py-3">Origem</th>
                 <th scope="col" class="px-6 py-3">Vencimento</th>
                 <th scope="col" class="px-6 py-3">Valor</th>
+                <th scope="col" class="px-6 py-3">Pagamento</th>
                 <th scope="col" class="px-6 py-3">Status</th>
                 <th scope="col" class="px-6 py-3 text-right">Ações</th>
             </tr>
@@ -73,9 +74,29 @@
                     <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                         {{ $receivable->description }}
                     </th>
-                    <td class="px-6 py-4">{{ $receivable->patient?->name ?? '-' }}</td>
+                    <td class="px-6 py-4">
+                        {{ $receivable->paymentSource?->name ?? $receivable->patient?->full_name ?? '-' }}
+                        @if($receivable->payment_source_type === \App\Models\Clinics\Clinic\HealthInsurance\HealthInsurance::class)
+                            <div class="text-xs text-gray-400">Convênio</div>
+                        @endif
+                    </td>
                     <td class="px-6 py-4">{{ $receivable->due_date->format('d/m/Y') }}</td>
                     <td class="px-6 py-4">R$ {{ number_format($receivable->amount, 2, ',', '.') }}</td>
+                    <td class="px-6 py-4">
+                        @php
+                            $paymentLabels = [
+                                'cash' => 'Dinheiro',
+                                'pix' => 'Pix',
+                                'credit_card' => 'Cartão crédito',
+                                'debit_card' => 'Cartão débito',
+                                'bank_slip' => 'Boleto',
+                                'bank_transfer' => 'Transferência',
+                                'other' => 'Outro',
+                            ];
+                        @endphp
+                        <div>{{ $receivable->paymentMethod?->name ?? $paymentLabels[$receivable->payment_method] ?? '-' }}</div>
+                        <div class="text-xs text-gray-400">{{ $receivable->bankAccount?->name ?? 'Sem conta' }}</div>
+                    </td>
                     <td class="px-6 py-4">
                         @php
                             $statusColors = [

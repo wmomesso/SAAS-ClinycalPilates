@@ -12,7 +12,10 @@ use App\Http\Controllers\Clinics\Clinic\Rooms\RoomController;
 use App\Http\Controllers\Clinics\Clinic\Services\ServiceTypeController;
 use App\Http\Controllers\Clinics\Clinic\Subscriptions\SubscriptionController;
 use App\Http\Controllers\Clinics\Finance\BankAccountController;
+use App\Http\Controllers\Clinics\Finance\BankReconciliationController;
+use App\Http\Controllers\Clinics\Finance\FinancialReportController;
 use App\Http\Controllers\Clinics\Finance\PayableController;
+use App\Http\Controllers\Clinics\Finance\PaymentMethodController;
 use App\Http\Controllers\Clinics\Finance\ReceivableController;
 use App\Http\Controllers\Clinics\RolesPermissions\ClinicUserController;
 use App\Http\Controllers\ProfileController;
@@ -43,6 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::get('patients/search', [PatientController::class, 'search'])->name('patients.search');
     Route::resource('patients', PatientController::class);
     Route::prefix('patients/{patient}')->name('patients.')->group(function () {
+        Route::post('packages', [PatientController::class, 'storePackage'])->name('packages.store');
         Route::post('evolutions', [\App\Http\Controllers\Clinics\Clinic\Patients\EvolutionController::class, 'store'])->name('evolutions.store');
         Route::post('documents', [\App\Http\Controllers\Clinics\Clinic\Patients\PatientDocumentController::class, 'store'])->name('documents.store');
         Route::post('anamneses', [\App\Http\Controllers\Clinics\Clinic\Patients\AnamnesisController::class, 'store'])->name('anamneses.store');
@@ -68,6 +72,11 @@ Route::middleware('auth')->group(function () {
 
     // --- Gestão Financeira (Contas e Fluxo) ---
     Route::resource('bank-accounts', BankAccountController::class);
+    Route::get('bank-reconciliation', [BankReconciliationController::class, 'index'])->name('bank-reconciliation.index');
+    Route::patch('bank-reconciliation/receivables/{receivable}', [BankReconciliationController::class, 'reconcileReceivable'])->name('bank-reconciliation.receivables.reconcile');
+    Route::patch('bank-reconciliation/payables/{payable}', [BankReconciliationController::class, 'reconcilePayable'])->name('bank-reconciliation.payables.reconcile');
+    Route::resource('payment-methods', PaymentMethodController::class)->except(['show']);
+    Route::get('financial-reports', [FinancialReportController::class, 'index'])->name('financial-reports.index');
     Route::resource('payables', PayableController::class);
     Route::resource('receivables', ReceivableController::class);
 
