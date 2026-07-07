@@ -6,7 +6,7 @@
     <nav class="flex" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
             <li class="inline-flex items-center">
-                <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-white transition-colors">
+                <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-400 dark:hover:text-white transition-colors">
                     <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
                     </svg>
@@ -18,7 +18,7 @@
                     <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
                     </svg>
-                    <span class="ml-1 text-sm font-medium text-emerald-600 dark:text-emerald-400 font-bold">Agenda</span>
+                    <span class="ml-1 text-sm font-medium text-primary-600 dark:text-primary-400 font-bold">Agenda</span>
                 </div>
             </li>
         </ol>
@@ -31,8 +31,8 @@
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                    <div class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
-                        <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+                        <svg class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
                     </div>
@@ -41,7 +41,7 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerencie os horários de atendimentos e profissionais.</p>
             </div>
             <button type="button" onclick="openNewAppointmentModal()"
-                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02]">
+                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02]">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
@@ -52,7 +52,7 @@
         <!-- Filtros por Sala -->
         <div class="flex flex-wrap gap-2 mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700">
             <button type="button" onclick="filterRoom(null)"
-                    class="room-filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 bg-emerald-600 text-white shadow-sm hover:shadow-md"
+                    class="room-filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 bg-primary-600 text-white shadow-sm hover:shadow-md"
                     data-room-id="all">
                 <svg class="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
@@ -61,7 +61,7 @@
             </button>
             @foreach($rooms as $room)
                 <button type="button" onclick="filterRoom({{ $room->id }})"
-                        class="room-filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-emerald-300 dark:hover:border-emerald-700"
+                        class="room-filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-primary-300 dark:hover:border-primary-700"
                         data-room-id="{{ $room->id }}">
                     {{ $room->name }}
                 </button>
@@ -83,7 +83,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
                     </button>
-                    <input type="date" id="schedule-date-input" class="rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                    <input type="date" id="schedule-date-input" class="rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-primary-500 focus:ring-primary-500 text-sm">
                 </div>
 
                 <div>
@@ -108,7 +108,7 @@
         <!-- Legenda -->
         <div class="mt-8 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700">
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
-                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                 </svg>
                 Legenda de Profissionais
@@ -116,7 +116,7 @@
             <div class="flex flex-wrap gap-4">
                 @foreach($professionals as $prof)
                     <div class="flex items-center space-x-2">
-                        <div class="w-4 h-4 rounded-full shadow-sm border border-gray-200 dark:border-gray-600" style="background-color: {{ $prof->calendar_color ?? '#3b82f6' }}"></div>
+                        <div class="w-4 h-4 rounded-full shadow-sm border border-gray-200 dark:border-gray-600" style="background-color: {{ $prof->calendar_color ?? 'rgb(var(--color-primary-500))' }}"></div>
                         <span class="text-sm text-gray-600 dark:text-gray-400">{{ $prof->name }}</span>
                     </div>
                 @endforeach
@@ -135,7 +135,7 @@
             <div class="relative p-4 w-full max-w-2xl max-h-full">
                 <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl">
                     <!-- Header -->
-                    <div class="flex items-center justify-between p-4 md:p-5 border-b border-gray-200 dark:border-gray-700 rounded-t-2xl bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20">
+                    <div class="flex items-center justify-between p-4 md:p-5 border-b border-gray-200 dark:border-gray-700 rounded-t-2xl bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-900/10">
                         <h3 id="modal-title" class="text-xl font-bold text-gray-900 dark:text-white">
                             Agendamento
                         </h3>
@@ -154,7 +154,7 @@
                         <!-- Footer -->
                         <div class="flex flex-wrap items-center justify-end p-4 md:p-5 border-t border-gray-200 dark:border-gray-700 rounded-b-2xl gap-2">
                             <button id="submit-btn" type="submit"
-                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02]">
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02]">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                 </svg>
@@ -192,7 +192,7 @@
                 return [
                     'id' => $professional->id,
                     'name' => $professional->name,
-                    'calendar_color' => $professional->calendar_color ?? '#3b82f6',
+                    'calendar_color' => $professional->calendar_color,
                 ];
             })->values();
 
@@ -221,6 +221,14 @@
                 canceled: 'Cancelado',
                 no_show: 'Faltou',
             };
+
+            function primaryColor(shade = 600, alpha = 1) {
+                const value = getComputedStyle(document.documentElement)
+                    .getPropertyValue(`--color-primary-${shade}`)
+                    .trim();
+
+                return value ? `rgb(${value} / ${alpha})` : '#2563eb';
+            }
 
             let selectedRoomId = null;
             let selectedDate = new Date();
@@ -304,7 +312,7 @@
                                     icon: 'error',
                                     title: 'Erro ao salvar',
                                     text: errorMessage,
-                                    confirmButtonColor: '#10b981',
+                                    confirmButtonColor: primaryColor(600),
                                 });
                             }
                         })
@@ -314,7 +322,7 @@
                                 icon: 'error',
                                 title: 'Erro',
                                 text: 'Erro na comunicação com o servidor.',
-                                confirmButtonColor: '#10b981',
+                                confirmButtonColor: primaryColor(600),
                             });
                         })
                         .finally(() => {
@@ -424,7 +432,7 @@
                         icon: 'error',
                         title: 'Erro',
                         text: 'Não foi possível carregar a agenda.',
-                        confirmButtonColor: '#10b981',
+                        confirmButtonColor: primaryColor(600),
                     });
                 } finally {
                     setLoading(false);
@@ -545,10 +553,10 @@
                 selectedRoomId = roomId;
                 document.querySelectorAll('.room-filter-btn').forEach(btn => {
                     if (btn.dataset.roomId == (roomId || 'all')) {
-                        btn.classList.add('bg-emerald-600', 'text-white');
+                        btn.classList.add('bg-primary-600', 'text-white');
                         btn.classList.remove('bg-white', 'text-gray-700', 'dark:bg-gray-800', 'dark:text-gray-300', 'border', 'border-gray-200');
                     } else {
-                        btn.classList.remove('bg-emerald-600', 'text-white');
+                        btn.classList.remove('bg-primary-600', 'text-white');
                         btn.classList.add('bg-white', 'text-gray-700', 'dark:bg-gray-800', 'dark:text-gray-300', 'border', 'border-gray-200');
                     }
                 });
@@ -570,42 +578,42 @@
 
                 const content = `
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="md:col-span-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
-                            <p class="text-sm font-semibold text-emerald-900 dark:text-emerald-100">${escapeHtml(selectedRoom?.name || 'Sala')}</p>
-                            <p id="appointment-range-preview" data-room-suffix="${selectedRoom ? ` · capacidade ${selectedRoom.capacity}` : ''}" class="text-xs text-emerald-700 dark:text-emerald-300">${formatDateTimeRange(startDate, endDate)}${selectedRoom ? ` · capacidade ${selectedRoom.capacity}` : ''}</p>
+                        <div class="md:col-span-2 p-3 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800">
+                            <p class="text-sm font-semibold text-primary-900 dark:text-primary-100">${escapeHtml(selectedRoom?.name || 'Sala')}</p>
+                            <p id="appointment-range-preview" data-room-suffix="${selectedRoom ? ` · capacidade ${selectedRoom.capacity}` : ''}" class="text-xs text-primary-700 dark:text-primary-300">${formatDateTimeRange(startDate, endDate)}${selectedRoom ? ` · capacidade ${selectedRoom.capacity}` : ''}</p>
                         </div>
                         <div class="md:col-span-2 relative">
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Paciente <span class="text-red-500">*</span></label>
                             <input type="text" id="patient_search" placeholder="Digite pelo menos 3 caracteres para buscar..." autocomplete="off"
-                                   class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                                   class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-primary-500 focus:ring-primary-500 text-sm">
                             <input type="hidden" name="patient_id" id="selected_patient_id" required>
                             <div id="patient_results" class="hidden absolute z-[80] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-48 overflow-y-auto"></div>
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Profissional <span class="text-red-500">*</span></label>
-                            <select name="professional_id" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                            <select name="professional_id" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-primary-500 focus:ring-primary-500 text-sm">
                                 ${professionals.map(professional => `<option value="${professional.id}">${escapeHtml(professional.name)}</option>`).join('')}
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Sala <span class="text-red-500">*</span></label>
-                            <select name="room_id" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                            <select name="room_id" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-primary-500 focus:ring-primary-500 text-sm">
                                 ${rooms.map(room => `<option value="${room.id}" ${Number(resolvedRoomId) === room.id ? 'selected' : ''}>${escapeHtml(room.name)} · cap. ${room.capacity}</option>`).join('')}
                             </select>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Serviço <span class="text-red-500">*</span></label>
-                            <select name="service_type_id" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                            <select name="service_type_id" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-primary-500 focus:ring-primary-500 text-sm">
                                 ${serviceTypes.map(service => `<option value="${service.id}" data-duration="${service.duration_in_minutes}">${escapeHtml(service.name)} (${service.duration_in_minutes} min)</option>`).join('')}
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Início <span class="text-red-500">*</span></label>
-                            <input type="datetime-local" name="start_time" value="${toLocalInputValue(startDate)}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                            <input type="datetime-local" name="start_time" value="${toLocalInputValue(startDate)}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-primary-500 focus:ring-primary-500 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">Fim <span class="text-red-500">*</span></label>
-                            <input type="datetime-local" name="end_time" value="${toLocalInputValue(endDate)}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                            <input type="datetime-local" name="end_time" value="${toLocalInputValue(endDate)}" step="900" required class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:border-primary-500 focus:ring-primary-500 text-sm">
                         </div>
                     </div>
                 `;
@@ -632,7 +640,7 @@
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <button type="button" onclick="markAppointmentStatus(${appointment.id}, 'completed')" class="inline-flex justify-center items-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase">
+                            <button type="button" onclick="markAppointmentStatus(${appointment.id}, 'completed')" class="inline-flex justify-center items-center gap-2 px-3 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold uppercase">
                                 Presença
                             </button>
                             <button type="button" onclick="markAppointmentStatus(${appointment.id}, 'no_show')" class="inline-flex justify-center items-center gap-2 px-3 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold uppercase">
@@ -668,7 +676,7 @@
                     input: status === 'no_show' ? 'textarea' : undefined,
                     inputPlaceholder: 'Observação opcional...',
                     showCancelButton: true,
-                    confirmButtonColor: status === 'completed' ? '#059669' : '#ea580c',
+                    confirmButtonColor: status === 'completed' ? primaryColor(600) : '#ea580c',
                     cancelButtonColor: '#6b7280',
                     confirmButtonText: 'Confirmar',
                     cancelButtonText: 'Voltar',
@@ -704,7 +712,7 @@
                                 icon: 'error',
                                 title: 'Erro',
                                 text: error.message,
-                                confirmButtonColor: '#10b981',
+                                confirmButtonColor: primaryColor(600),
                             });
                         });
                 });
@@ -745,7 +753,7 @@
                                 icon: 'error',
                                 title: 'Erro',
                                 text: error.message,
-                                confirmButtonColor: '#10b981',
+                                confirmButtonColor: primaryColor(600),
                             });
                         });
                 });
@@ -758,7 +766,7 @@
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
+                    cancelButtonColor: primaryColor(600),
                     confirmButtonText: 'Sim, cancelar!',
                     cancelButtonText: 'Não, manter'
                 }).then((result) => {
@@ -826,7 +834,7 @@
                             if (data.length > 0) {
                                 data.forEach(patient => {
                                     const div = document.createElement('div');
-                                    div.className = 'p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 text-sm dark:text-gray-300';
+                                    div.className = 'p-3 hover:bg-primary-50 dark:hover:bg-primary-900/30 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 text-sm dark:text-gray-300';
                                     div.textContent = patient.full_name;
                                     div.onclick = () => {
                                         searchInput.value = patient.full_name;
@@ -903,7 +911,7 @@
                     title: item.title,
                     start: new Date(item.start),
                     end: new Date(item.end),
-                    backgroundColor: item.backgroundColor || '#3b82f6',
+                    backgroundColor: item.backgroundColor || primaryColor(500),
                     patient_id: Number(props.patient_id),
                     patient_name: props.patient_name || item.title,
                     professional_id: Number(props.professional_id),
@@ -982,7 +990,7 @@
                     icon: 'warning',
                     title: 'Sala sem vaga nesse período',
                     text: 'Escolha outro horário, reduza o período ou selecione uma sala com capacidade disponível.',
-                    confirmButtonColor: '#10b981',
+                    confirmButtonColor: primaryColor(600),
                 });
             }
 
@@ -1066,7 +1074,10 @@
             }
 
             function sanitizeColor(value) {
-                return /^#[0-9a-f]{3,8}$/i.test(value) ? value : '#3b82f6';
+                if (/^#[0-9a-f]{3,8}$/i.test(value)) return value;
+                if (/^rgb\(/i.test(value)) return value;
+
+                return primaryColor(500);
             }
         </script>
 
@@ -1096,8 +1107,8 @@
 
             .schedule-nav-btn:hover,
             .schedule-action-btn:hover {
-                border-color: #10b981;
-                color: #047857;
+                border-color: rgb(var(--color-primary-500));
+                color: rgb(var(--color-primary-700));
             }
 
             .dark .schedule-nav-btn,
@@ -1131,9 +1142,9 @@
             }
 
             .week-day-btn.is-selected {
-                border-color: #10b981;
-                background: #ecfdf5;
-                color: #047857;
+                border-color: rgb(var(--color-primary-500));
+                background: rgb(var(--color-primary-50));
+                color: rgb(var(--color-primary-700));
             }
 
             .week-day-btn.is-today:not(.is-selected) {
@@ -1149,9 +1160,9 @@
             }
 
             .dark .week-day-btn.is-selected {
-                border-color: #34d399;
-                background: rgba(6, 78, 59, 0.45);
-                color: #a7f3d0;
+                border-color: rgb(var(--color-primary-400));
+                background: rgb(var(--color-primary-900) / 0.45);
+                color: rgb(var(--color-primary-200));
             }
 
             .dark .week-day-btn.is-today:not(.is-selected) {
@@ -1256,13 +1267,13 @@
             }
 
             .schedule-cell:hover {
-                background: #f0fdf4;
-                box-shadow: inset 0 0 0 1px #34d399;
+                background: rgb(var(--color-primary-50) / 0.8);
+                box-shadow: inset 0 0 0 1px rgb(var(--color-primary-400));
             }
 
             .schedule-cell.is-selecting {
-                background: #d1fae5;
-                box-shadow: inset 0 0 0 2px #10b981;
+                background: rgb(var(--color-primary-100));
+                box-shadow: inset 0 0 0 2px rgb(var(--color-primary-500));
             }
 
             .schedule-cell.is-full {
@@ -1279,11 +1290,11 @@
             }
 
             .dark .schedule-cell:hover {
-                background: rgba(6, 78, 59, 0.32);
+                background: rgb(var(--color-primary-900) / 0.32);
             }
 
             .dark .schedule-cell.is-selecting {
-                background: rgba(16, 185, 129, 0.28);
+                background: rgb(var(--color-primary-500) / 0.28);
             }
 
             .dark .schedule-cell.is-full {
@@ -1303,9 +1314,9 @@
                 align-items: center;
                 min-height: 1.25rem;
                 border-radius: 999px;
-                background: #ecfdf5;
+                background: rgb(var(--color-primary-50));
                 padding: 0 0.45rem;
-                color: #047857;
+                color: rgb(var(--color-primary-700));
                 font-size: 0.68rem;
                 font-weight: 800;
             }
@@ -1316,8 +1327,8 @@
             }
 
             .dark .capacity-badge {
-                background: rgba(16, 185, 129, 0.16);
-                color: #a7f3d0;
+                background: rgb(var(--color-primary-500) / 0.16);
+                color: rgb(var(--color-primary-200));
             }
 
             .dark .capacity-badge.is-full {
@@ -1332,14 +1343,14 @@
                 width: 1.5rem;
                 height: 1.5rem;
                 border-radius: 999px;
-                background: #10b981;
+                background: rgb(var(--color-primary-600));
                 color: #ffffff;
                 opacity: 0.92;
                 transition: background-color 0.15s ease, transform 0.15s ease;
             }
 
             .schedule-add-btn:hover {
-                background: #059669;
+                background: rgb(var(--color-primary-700));
                 transform: scale(1.04);
             }
 

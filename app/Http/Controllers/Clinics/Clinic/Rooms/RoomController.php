@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Clinics\Clinic\Rooms;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Clinics\Clinic\Room\StoreRoomRequest;
 use App\Models\Clinics\Clinic\Room\Room;
+use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class RoomController extends Controller
@@ -39,6 +40,14 @@ class RoomController extends Controller
      */
     public function store(StoreRoomRequest $request)
     {
+        $clinic = Auth::user()->clinic;
+
+        if ($clinic && $clinic->hasReachedSubscriptionLimit('limit_rooms', $clinic->rooms()->count())) {
+            return back()
+                ->withErrors(['name' => 'O limite de salas do plano contratado foi atingido.'])
+                ->withInput();
+        }
+
         Room::create($request->validated());
 
         Alert::success('Sucesso', 'Sala cadastrada com sucesso.');

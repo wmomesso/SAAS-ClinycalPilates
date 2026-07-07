@@ -18,8 +18,10 @@ class SubscriptionPlan extends Model
         'slug',
         'stripe_plan_id',
         'price',
+        'billing_period',
         'description',
         'limit_professionals',
+        'limit_secretaries',
         'limit_patients',
         'limit_rooms',
         'is_active',
@@ -27,6 +29,10 @@ class SubscriptionPlan extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'limit_professionals' => 'integer',
+        'limit_secretaries' => 'integer',
+        'limit_patients' => 'integer',
+        'limit_rooms' => 'integer',
         'is_active' => 'boolean',
     ];
 

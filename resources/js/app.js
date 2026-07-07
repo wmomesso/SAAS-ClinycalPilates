@@ -91,21 +91,12 @@ function updateAvatarColor(color) {
         '#user-avatar-responsive-placeholder'
     ];
 
-    // Mapeamento de classes de cores para o background do placeholder
-    const bgClassMap = {
-        blue: 'bg-primary-100',
-        emerald: 'bg-emerald-100',
-        purple: 'bg-purple-100',
-        rose: 'bg-rose-100',
-        amber: 'bg-amber-100'
-    };
-
     placeholderSelectors.forEach(selector => {
         const placeholder = document.querySelector(selector);
         if (placeholder) {
-            // Remove classes bg-primary-100, bg-emerald-100, etc. (simplificado: remove bg-*-100)
+            // Mantem o placeholder preso a primary para respeitar a paleta ativa.
             placeholder.className = placeholder.className.replace(/\bbg-\w+-100\b/g, '');
-            placeholder.classList.add(bgClassMap[color] || 'bg-primary-100');
+            placeholder.classList.add('bg-primary-100');
         }
     });
 }

@@ -20,12 +20,12 @@
         {{-- Card Total de Clínicas --}}
         <div class="p-6 bg-white border border-gray-100 rounded-3xl shadow-sm dark:bg-gray-800 dark:border-gray-700 hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between mb-4">
-                <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
-                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-2xl">
+                    <svg class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                     </svg>
                 </div>
-                <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg dark:bg-blue-900/30">Global</span>
+                <span class="text-xs font-bold text-primary-600 bg-primary-50 px-2 py-1 rounded-lg dark:bg-primary-900/30">Global</span>
             </div>
             <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total de Clínicas</h2>
             <p class="text-3xl font-black text-gray-900 dark:text-white mt-1">{{ $totalClinics }}</p>
@@ -157,8 +157,8 @@
                             <p class="text-xs text-gray-500">Criar modalidade</p>
                         </div>
                     </a>
-                    <a href="{{ route('admin.clinics.index') }}" class="flex items-center gap-4 p-4 border border-gray-100 dark:border-gray-700 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 transition-all group">
-                        <div class="p-3 bg-blue-50 dark:bg-blue-900/40 rounded-xl text-blue-600 group-hover:scale-110 transition-transform">
+                    <a href="{{ route('admin.clinics.index') }}" class="flex items-center gap-4 p-4 border border-gray-100 dark:border-gray-700 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-200 transition-all group">
+                        <div class="p-3 bg-primary-50 dark:bg-primary-900/40 rounded-xl text-primary-600 group-hover:scale-110 transition-transform">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                         </div>
                         <div>

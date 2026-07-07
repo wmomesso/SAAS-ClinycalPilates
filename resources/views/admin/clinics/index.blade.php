@@ -47,7 +47,7 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 text-sm font-medium">
-                            <a href="#" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">Detalhes</a>
+                            <a href="{{ route('admin.clinics.show', $clinic) }}" class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">Detalhes</a>
                         </td>
                     </tr>
                 @empty

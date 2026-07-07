@@ -13,6 +13,11 @@ class ClinicUserController extends Controller
 {
     private const MANAGEABLE_ROLES = ['admin-clinica', 'profissional', 'recepcionista', 'paciente'];
 
+    private const ROLE_LIMITS = [
+        'profissional' => 'limit_professionals',
+        'recepcionista' => 'limit_secretaries',
+    ];
+
     public function __construct()
     {
         $this->authorizeResource(User::class, 'clinic_user');
@@ -47,7 +52,7 @@ class ClinicUserController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
@@ -55,15 +60,21 @@ class ClinicUserController extends Controller
             'calendar_color' => 'nullable|string|max:7',
         ]);
 
+        if ($this->roleLimitReached($validated['role'])) {
+            return back()
+                ->withErrors(['role' => 'O limite desse perfil no plano contratado foi atingido.'])
+                ->withInput();
+        }
+
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
             'clinic_id' => Auth::user()->clinic_id, // Associa à clínica do admin logado
-            'calendar_color' => $request->calendar_color,
+            'calendar_color' => $validated['calendar_color'] ?? null,
         ]);
 
-        $user->assignRole($request->role);
+        $user->assignRole($validated['role']);
 
         return redirect()->route('clinic-users.index')->with('success', 'Usuário criado com sucesso.');
     }
@@ -80,7 +91,7 @@ class ClinicUserController extends Controller
     // update
     public function update(User $clinic_user, Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,'.$clinic_user->id,
             'password' => 'nullable|string|min:8',
@@ -88,17 +99,23 @@ class ClinicUserController extends Controller
             'calendar_color' => 'nullable|string|max:7',
         ]);
 
-        $clinic_user->name = $request->name;
-        $clinic_user->email = $request->email;
-        $clinic_user->calendar_color = $request->calendar_color;
+        if (! $clinic_user->hasRole($validated['role']) && $this->roleLimitReached($validated['role'])) {
+            return back()
+                ->withErrors(['role' => 'O limite desse perfil no plano contratado foi atingido.'])
+                ->withInput();
+        }
+
+        $clinic_user->name = $validated['name'];
+        $clinic_user->email = $validated['email'];
+        $clinic_user->calendar_color = $validated['calendar_color'] ?? null;
 
         // Só atualiza a senha se foi fornecida
-        if ($request->filled('password')) {
-            $clinic_user->password = bcrypt($request->password);
+        if (! empty($validated['password'])) {
+            $clinic_user->password = bcrypt($validated['password']);
         }
 
         $clinic_user->save();
-        $clinic_user->syncRoles([$request->role]);
+        $clinic_user->syncRoles([$validated['role']]);
 
         return redirect()->route('clinic-users.index')->with('success', 'Usuário atualizado com sucesso.');
     }
@@ -116,5 +133,21 @@ class ClinicUserController extends Controller
         $clinic_user->delete();
 
         return redirect()->route('clinic-users.index')->with('success', 'Usuário removido com sucesso.');
+    }
+
+    private function roleLimitReached(string $role): bool
+    {
+        $limitColumn = self::ROLE_LIMITS[$role] ?? null;
+        $clinic = Auth::user()->clinic;
+
+        if (! $limitColumn || ! $clinic) {
+            return false;
+        }
+
+        $currentCount = User::where('clinic_id', $clinic->id)
+            ->role($role)
+            ->count();
+
+        return $clinic->hasReachedSubscriptionLimit($limitColumn, $currentCount);
     }
 }

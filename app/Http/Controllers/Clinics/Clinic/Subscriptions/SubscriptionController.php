@@ -24,8 +24,9 @@ class SubscriptionController extends Controller
 
         $plans = SubscriptionPlan::where('is_active', true)->get();
         $currentSubscription = $clinic->subscription('default');
+        $canManageSubscription = Auth::user()->can('gerenciar-assinatura-saas');
 
-        return view('clinic.subscriptions.index', compact('plans', 'currentSubscription', 'clinic'));
+        return view('clinic.subscriptions.index', compact('plans', 'currentSubscription', 'clinic', 'canManageSubscription'));
     }
 
     /**
@@ -35,6 +36,12 @@ class SubscriptionController extends Controller
     {
         if (Auth::user()->hasRole('super-admin')) {
             return redirect()->route('admin.dashboard');
+        }
+
+        if (! $request->user()->can('gerenciar-assinatura-saas')) {
+            return redirect()
+                ->route('subscription.index')
+                ->with('warning', 'Você não tem permissão para contratar planos. Informe o gestor da clínica que o plano está expirado.');
         }
 
         $validated = $request->validate([
@@ -66,6 +73,12 @@ class SubscriptionController extends Controller
     {
         if ($request->user()->hasRole('super-admin')) {
             return redirect()->route('admin.dashboard');
+        }
+
+        if (! $request->user()->can('gerenciar-assinatura-saas')) {
+            return redirect()
+                ->route('subscription.index')
+                ->with('warning', 'Você não tem permissão para gerenciar a assinatura. Informe o gestor da clínica.');
         }
 
         $clinic = $request->user()->clinic;

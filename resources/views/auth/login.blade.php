@@ -63,7 +63,7 @@
             </label>
 
             @if (Route::has('password.request'))
-                <a class="text-xs text-primary dark:text-teal-400 hover:text-primary-dark dark:hover:text-teal-300 font-medium transition-colors duration-200"
+                <a class="text-xs text-primary dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors duration-200"
                    href="{{ route('password.request') }}">
                     {{ __('Esqueceu a senha?') }}
                 </a>
@@ -72,7 +72,7 @@
 
         <!-- Submit Button -->
         <button type="submit"
-                class="w-full flex justify-center items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white rounded-xl text-sm font-semibold transition-all duration-200 shadow-md shadow-teal-500/25 hover:shadow-lg hover:shadow-teal-500/35 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 dark:focus:ring-offset-gray-800">
+                class="w-full flex justify-center items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl text-sm font-semibold transition-all duration-200 shadow-md shadow-primary-500/25 hover:shadow-lg hover:shadow-primary-500/35 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
             </svg>
@@ -83,7 +83,7 @@
         @if (Route::has('register'))
             <div class="text-center text-xs text-gray-500 dark:text-gray-400">
                 {{ __('Não tem uma conta?') }}
-                <a href="{{ route('register') }}" class="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium transition-colors duration-200">
+                <a href="{{ route('register') }}" class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors duration-200">
                     {{ __('Cadastre-se') }}
                 </a>
             </div>

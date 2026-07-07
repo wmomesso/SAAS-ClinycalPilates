@@ -76,4 +76,33 @@ class ClinicController extends Controller
 
         return view('admin.clinics.index', compact('clinics'));
     }
+
+    /**
+     * Exibe os detalhes de uma clínica para o Super Admin.
+     */
+    public function show(Clinic $clinic)
+    {
+        $this->authorize('view', $clinic);
+
+        $clinic->load('owner')->loadCount(['users', 'patients', 'rooms']);
+
+        $subscription = null;
+        $subscriptionPlan = null;
+        $isSubscribed = false;
+
+        try {
+            $subscription = $clinic->subscription('default');
+            $subscriptionPlan = $clinic->currentSubscriptionPlan();
+            $isSubscribed = $clinic->subscribed();
+        } catch (\Throwable) {
+            //
+        }
+
+        return view('admin.clinics.show', compact(
+            'clinic',
+            'subscription',
+            'subscriptionPlan',
+            'isSubscribed'
+        ));
+    }
 }

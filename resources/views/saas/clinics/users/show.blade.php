@@ -12,7 +12,7 @@
         <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
             <li class="inline-flex items-center">
                 <a href="{{ route('dashboard') }}" aria-current="page"
-                   class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
+                   class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-400 dark:hover:text-white">
                     <svg class="w-3 h-3 pr-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                          viewBox="0 0 20 20">
                         <path
@@ -29,7 +29,7 @@
                               d="m1 9 4-4-4-4"/>
                     </svg>
                     <a href="{{ route('clinic-users.index') }}"
-                       class="ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">Usuários</a>
+                       class="ms-1 text-sm font-medium text-gray-700 hover:text-primary-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">Usuários</a>
                 </div>
             </li>
             <li aria-current="page">
@@ -58,7 +58,7 @@
                     </p>
                 </div>
                 <a href="{{ route('clinic-users.index') }}"
-                   class="text-sm font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                   class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline">
                     &larr; Voltar para a lista
                 </a>
             </div>

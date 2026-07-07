@@ -7,13 +7,18 @@ use App\Models\Clinics\Clinic\Appointment\Appointment;
 use App\Models\Clinics\Clinic\Patient\Patient;
 use App\Models\Clinics\Clinic\Room\Room;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request): View
+    public function __invoke(Request $request): View|RedirectResponse
     {
+        if ($request->user()?->hasRole('super-admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+
         $today = Carbon::today();
 
         // 1. Atendimentos agendados no dia (Eager load relationships for the list)

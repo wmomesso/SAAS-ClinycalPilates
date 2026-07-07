@@ -26,7 +26,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', \App\Http\Controllers\Clinics\Clinic\DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', \App\Http\Controllers\Clinics\Clinic\DashboardController::class)->middleware(['auth', 'verified', 'active.clinic.subscription'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     // Perfil do Usuário
@@ -34,55 +34,57 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Gestão da Clínica (Configurações e Usuários)
-    Route::resource('clinic-users', ClinicUserController::class);
-    Route::get('clinic-settings', [ClinicController::class, 'settings'])->name('clinic.settings');
-    Route::put('clinic-settings', [ClinicController::class, 'update'])->name('clinic.update');
-    Route::get('roles/{role}/permissions', [RolePermissionController::class, 'index'])->name('roles.permissions.index');
-    Route::post('roles/{role}/permissions', [RolePermissionController::class, 'update'])->name('roles.permissions.update');
+    Route::middleware('active.clinic.subscription')->group(function () {
+        // Gestão da Clínica (Configurações e Usuários)
+        Route::resource('clinic-users', ClinicUserController::class);
+        Route::get('clinic-settings', [ClinicController::class, 'settings'])->name('clinic.settings');
+        Route::put('clinic-settings', [ClinicController::class, 'update'])->name('clinic.update');
+        Route::get('roles/{role}/permissions', [RolePermissionController::class, 'index'])->name('roles.permissions.index');
+        Route::post('roles/{role}/permissions', [RolePermissionController::class, 'update'])->name('roles.permissions.update');
 
-    // Sprint 2: Gestão de Pacientes
-    // O resource cria automaticamente rotas para index, create, store, show, edit, update e destroy
-    Route::get('patients/search', [PatientController::class, 'search'])->name('patients.search');
-    Route::resource('patients', PatientController::class);
-    Route::prefix('patients/{patient}')->name('patients.')->group(function () {
-        Route::post('packages', [PatientController::class, 'storePackage'])->name('packages.store');
-        Route::post('evolutions', [\App\Http\Controllers\Clinics\Clinic\Patients\EvolutionController::class, 'store'])->name('evolutions.store');
-        Route::post('documents', [\App\Http\Controllers\Clinics\Clinic\Patients\PatientDocumentController::class, 'store'])->name('documents.store');
-        Route::post('anamneses', [\App\Http\Controllers\Clinics\Clinic\Patients\AnamnesisController::class, 'store'])->name('anamneses.store');
-        Route::get('anamneses/compare', [\App\Http\Controllers\Clinics\Clinic\Patients\AnamnesisController::class, 'compare'])->name('anamneses.compare');
+        // Sprint 2: Gestão de Pacientes
+        // O resource cria automaticamente rotas para index, create, store, show, edit, update e destroy
+        Route::get('patients/search', [PatientController::class, 'search'])->name('patients.search');
+        Route::resource('patients', PatientController::class);
+        Route::prefix('patients/{patient}')->name('patients.')->group(function () {
+            Route::post('packages', [PatientController::class, 'storePackage'])->name('packages.store');
+            Route::post('evolutions', [\App\Http\Controllers\Clinics\Clinic\Patients\EvolutionController::class, 'store'])->name('evolutions.store');
+            Route::post('documents', [\App\Http\Controllers\Clinics\Clinic\Patients\PatientDocumentController::class, 'store'])->name('documents.store');
+            Route::post('anamneses', [\App\Http\Controllers\Clinics\Clinic\Patients\AnamnesisController::class, 'store'])->name('anamneses.store');
+            Route::get('anamneses/compare', [\App\Http\Controllers\Clinics\Clinic\Patients\AnamnesisController::class, 'compare'])->name('anamneses.compare');
+        });
+        Route::delete('evolutions/{evolution}', [\App\Http\Controllers\Clinics\Clinic\Patients\EvolutionController::class, 'destroy'])->name('evolutions.destroy');
+        Route::delete('documents/{document}', [\App\Http\Controllers\Clinics\Clinic\Patients\PatientDocumentController::class, 'destroy'])->name('documents.destroy');
+        Route::get('anamneses/{anamnesis}', [\App\Http\Controllers\Clinics\Clinic\Patients\AnamnesisController::class, 'show'])->name('anamneses.show');
+
+        // --- Sprint 3: Gestão de Salas ---
+        // Namespace: App\Http\Controllers\Clinics\Clinic\Rooms
+        Route::resource('rooms', RoomController::class);
+
+        // --- Sprint 4: Gestão de Agendamentos e Serviços ---
+        Route::resource('service-types', ServiceTypeController::class);
+        Route::resource('appointments', AppointmentController::class);
+        Route::patch('appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
+
+        // --- Sprint 5: Gestão Financeira (Faturamento e Pacotes) ---
+        Route::resource('service-packages', ServicePackageController::class);
+        Route::resource('invoices', InvoiceController::class);
+        Route::post('invoices/{invoice}/payments', [InvoiceController::class, 'addPayment'])->name('invoices.payment');
+
+        // --- Gestão Financeira (Contas e Fluxo) ---
+        Route::resource('bank-accounts', BankAccountController::class);
+        Route::get('bank-reconciliation', [BankReconciliationController::class, 'index'])->name('bank-reconciliation.index');
+        Route::patch('bank-reconciliation/receivables/{receivable}', [BankReconciliationController::class, 'reconcileReceivable'])->name('bank-reconciliation.receivables.reconcile');
+        Route::patch('bank-reconciliation/payables/{payable}', [BankReconciliationController::class, 'reconcilePayable'])->name('bank-reconciliation.payables.reconcile');
+        Route::resource('payment-methods', PaymentMethodController::class)->except(['show']);
+        Route::get('financial-reports', [FinancialReportController::class, 'index'])->name('financial-reports.index');
+        Route::resource('payables', PayableController::class);
+        Route::resource('receivables', ReceivableController::class);
+
+        // --- Sprint 7: Módulo de Convênios ---
+        Route::resource('health-insurances', HealthInsuranceController::class);
+        Route::resource('insurance-guides', InsuranceGuideController::class);
     });
-    Route::delete('evolutions/{evolution}', [\App\Http\Controllers\Clinics\Clinic\Patients\EvolutionController::class, 'destroy'])->name('evolutions.destroy');
-    Route::delete('documents/{document}', [\App\Http\Controllers\Clinics\Clinic\Patients\PatientDocumentController::class, 'destroy'])->name('documents.destroy');
-    Route::get('anamneses/{anamnesis}', [\App\Http\Controllers\Clinics\Clinic\Patients\AnamnesisController::class, 'show'])->name('anamneses.show');
-
-    // --- Sprint 3: Gestão de Salas ---
-    // Namespace: App\Http\Controllers\Clinics\Clinic\Rooms
-    Route::resource('rooms', RoomController::class);
-
-    // --- Sprint 4: Gestão de Agendamentos e Serviços ---
-    Route::resource('service-types', ServiceTypeController::class);
-    Route::resource('appointments', AppointmentController::class);
-    Route::patch('appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
-
-    // --- Sprint 5: Gestão Financeira (Faturamento e Pacotes) ---
-    Route::resource('service-packages', ServicePackageController::class);
-    Route::resource('invoices', InvoiceController::class);
-    Route::post('invoices/{invoice}/payments', [InvoiceController::class, 'addPayment'])->name('invoices.payment');
-
-    // --- Gestão Financeira (Contas e Fluxo) ---
-    Route::resource('bank-accounts', BankAccountController::class);
-    Route::get('bank-reconciliation', [BankReconciliationController::class, 'index'])->name('bank-reconciliation.index');
-    Route::patch('bank-reconciliation/receivables/{receivable}', [BankReconciliationController::class, 'reconcileReceivable'])->name('bank-reconciliation.receivables.reconcile');
-    Route::patch('bank-reconciliation/payables/{payable}', [BankReconciliationController::class, 'reconcilePayable'])->name('bank-reconciliation.payables.reconcile');
-    Route::resource('payment-methods', PaymentMethodController::class)->except(['show']);
-    Route::get('financial-reports', [FinancialReportController::class, 'index'])->name('financial-reports.index');
-    Route::resource('payables', PayableController::class);
-    Route::resource('receivables', ReceivableController::class);
-
-    // --- Sprint 7: Módulo de Convênios ---
-    Route::resource('health-insurances', HealthInsuranceController::class);
-    Route::resource('insurance-guides', InsuranceGuideController::class);
 
     // --- Sprint 6: Módulo SAAS (Assinaturas e Planos) ---
     // Rotas para a Clínica gerenciar sua assinatura
@@ -95,6 +97,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', \App\Http\Controllers\SAAS\AdminDashboardController::class)->name('admin.dashboard');
         Route::resource('plans', PlanController::class);
         Route::get('clinics', [ClinicController::class, 'index'])->name('admin.clinics.index');
+        Route::get('clinics/{clinic}', [ClinicController::class, 'show'])->name('admin.clinics.show');
     });
 });
 

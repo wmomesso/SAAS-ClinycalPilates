@@ -10,8 +10,6 @@
         window.userName = @json(Auth::user()->name ?? 'Usuário');
     </script>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
     <script>
         // Configuração inicial (apenas para evitar FOUC)
         (function() {
@@ -28,137 +26,9 @@
         })();
     </script>
 
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <style>
-        /* Color themes definitions - CSS Variables */
-        :root {
-            --color-primary: #3b82f6;
-            --color-primary-50: #eff6ff;
-            --color-primary-100: #dbeafe;
-            --color-primary-200: #bfdbfe;
-            --color-primary-300: #93c5fd;
-            --color-primary-400: #60a5fa;
-            --color-primary-500: #3b82f6;
-            --color-primary-600: #2563eb;
-            --color-primary-700: #1d4ed8;
-            --color-primary-800: #1e40af;
-            --color-primary-900: #1e3a8a;
-        }
-
-        @supports (color: color-mix(in srgb, black, white)) {
-            :root {
-                --color-primary: #3b82f6;
-            }
-        }
-
-        [data-primary-color="blue"] {
-            --color-primary: #3b82f6;
-            --color-primary-50: #eff6ff;
-            --color-primary-100: #dbeafe;
-            --color-primary-200: #bfdbfe;
-            --color-primary-300: #93c5fd;
-            --color-primary-400: #60a5fa;
-            --color-primary-500: #3b82f6;
-            --color-primary-600: #2563eb;
-            --color-primary-700: #1d4ed8;
-            --color-primary-800: #1e40af;
-            --color-primary-900: #1e3a8a;
-        }
-
-        [data-primary-color="emerald"] {
-            --color-primary: #10b981;
-            --color-primary-50: #ecfdf5;
-            --color-primary-100: #d1fae5;
-            --color-primary-200: #a7f3d0;
-            --color-primary-300: #6ee7b7;
-            --color-primary-400: #34d399;
-            --color-primary-500: #10b981;
-            --color-primary-600: #059669;
-            --color-primary-700: #047857;
-            --color-primary-800: #065f46;
-            --color-primary-900: #064e3b;
-        }
-
-        [data-primary-color="purple"] {
-            --color-primary: #a855f7;
-            --color-primary-50: #faf5ff;
-            --color-primary-100: #f3e8ff;
-            --color-primary-200: #e9d5ff;
-            --color-primary-300: #d8b4fe;
-            --color-primary-400: #c084fc;
-            --color-primary-500: #a855f7;
-            --color-primary-600: #9333ea;
-            --color-primary-700: #7e22ce;
-            --color-primary-800: #6b21a5;
-            --color-primary-900: #581c87;
-        }
-
-        [data-primary-color="rose"] {
-            --color-primary: #f43f5e;
-            --color-primary-50: #fff1f2;
-            --color-primary-100: #ffe4e6;
-            --color-primary-200: #fecdd3;
-            --color-primary-300: #fda4af;
-            --color-primary-400: #fb7185;
-            --color-primary-500: #f43f5e;
-            --color-primary-600: #e11d48;
-            --color-primary-700: #be123c;
-            --color-primary-800: #9f1239;
-            --color-primary-900: #881337;
-        }
-
-        [data-primary-color="amber"] {
-            --color-primary: #f59e0b;
-            --color-primary-50: #fffbeb;
-            --color-primary-100: #fef3c7;
-            --color-primary-200: #fde68a;
-            --color-primary-300: #fcd34d;
-            --color-primary-400: #fbbf24;
-            --color-primary-500: #f59e0b;
-            --color-primary-600: #d97706;
-            --color-primary-700: #b45309;
-            --color-primary-800: #92400e;
-            --color-primary-900: #78350f;
-        }
-
-        /* Utility classes for dynamic colors */
-        .bg-primary-50 { background-color: var(--color-primary-50, #eff6ff); }
-        .bg-primary-100 { background-color: var(--color-primary-100, #dbeafe); }
-        .bg-primary-200 { background-color: var(--color-primary-200, #bfdbfe); }
-        .bg-primary-300 { background-color: var(--color-primary-300, #93c5fd); }
-        .bg-primary-400 { background-color: var(--color-primary-400, #60a5fa); }
-        .bg-primary-500 { background-color: var(--color-primary-500, #3b82f6); }
-        .bg-primary-600 { background-color: var(--color-primary-600, #2563eb); }
-        .bg-primary-700 { background-color: var(--color-primary-700, #1d4ed8); }
-        .bg-primary-800 { background-color: var(--color-primary-800, #1e40af); }
-        .bg-primary-900 { background-color: var(--color-primary-900, #1e3a8a); }
-
-        .text-primary-50 { color: var(--color-primary-50, #eff6ff); }
-        .text-primary-100 { color: var(--color-primary-100, #dbeafe); }
-        .text-primary-200 { color: var(--color-primary-200, #bfdbfe); }
-        .text-primary-300 { color: var(--color-primary-300, #93c5fd); }
-        .text-primary-400 { color: var(--color-primary-400, #60a5fa); }
-        .text-primary-500 { color: var(--color-primary-500, #3b82f6); }
-        .text-primary-600 { color: var(--color-primary-600, #2563eb); }
-        .text-primary-700 { color: var(--color-primary-700, #1d4ed8); }
-        .text-primary-800 { color: var(--color-primary-800, #1e40af); }
-        .text-primary-900 { color: var(--color-primary-900, #1e3a8a); }
-
-        .border-primary-500 { border-color: var(--color-primary-500, #3b82f6); }
-        .ring-primary-500 { --tw-ring-color: var(--color-primary-500, #3b82f6); }
-        .focus\:ring-primary-500:focus { --tw-ring-color: var(--color-primary-500, #3b82f6); }
-
-        .from-primary-500 { --tw-gradient-from: var(--color-primary-500, #3b82f6); }
-        .to-primary-600 { --tw-gradient-to: var(--color-primary-600, #2563eb); }
-        .from-primary-600 { --tw-gradient-from: var(--color-primary-600, #2563eb); }
-        .to-primary-400 { --tw-gradient-to: var(--color-primary-400, #60a5fa); }
-
-        .hover\:bg-primary-50:hover { background-color: var(--color-primary-50, #eff6ff); }
-        .hover\:text-primary-600:hover { color: var(--color-primary-600, #2563eb); }
-        .group-hover\:text-primary-500:hover { color: var(--color-primary-500, #3b82f6); }
-
-        .dark .dark\:bg-primary-900\/20 { background-color: rgba(var(--color-primary-900, 30, 58, 138), 0.2); }
-        .dark .dark\:text-primary-400 { color: var(--color-primary-400, #60a5fa); }
-
         /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
@@ -446,7 +316,7 @@
         <div class="py-4">
             <div class="mb-6 px-3">
                 <div class="relative group">
-                    <input type="text" placeholder="Buscar..." class="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-100/50 dark:bg-gray-800/50 border-0 rounded-2xl focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 transition-all text-gray-700 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500">
+                    <input type="text" placeholder="Buscar no menu" class="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-100/50 dark:bg-gray-800/50 border-0 rounded-2xl focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 transition-all text-gray-700 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500">
                     <svg class="absolute left-3 top-3 w-4 h-4 text-gray-400 dark:text-gray-500 group-focus-within:text-primary-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>

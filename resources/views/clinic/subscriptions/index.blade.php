@@ -46,7 +46,7 @@
                         @endif
                     </p>
                 </div>
-                @if($currentSubscription)
+                @if($currentSubscription && $canManageSubscription)
                     <a href="{{ route('subscription.billing') }}" class="inline-flex items-center px-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold rounded-xl transition-all">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                         Portal de Faturamento
@@ -55,9 +55,19 @@
             </div>
         </div>
 
+        @if(!$canManageSubscription && (!$currentSubscription || !$currentSubscription->valid()))
+            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-100 rounded-2xl p-5 mb-8">
+                <p class="font-bold">Plano expirado</p>
+                <p class="text-sm mt-1">Informe o gestor da clínica para regularizar a assinatura e liberar novamente o acesso administrativo.</p>
+            </div>
+        @endif
+
         {{-- Lista de Planos --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             @foreach ($plans as $plan)
+                @php
+                    $periodLabel = ['monthly' => 'mês', 'yearly' => 'ano'][$plan->billing_period] ?? 'mês';
+                @endphp
                 <div class="bg-white dark:bg-gray-800 shadow-xl rounded-3xl p-8 border-2 {{ $currentSubscription && $currentSubscription->hasPrice($plan->stripe_plan_id) ? 'border-primary-500' : 'border-transparent' }} flex flex-col relative overflow-hidden">
                     @if($currentSubscription && $currentSubscription->hasPrice($plan->stripe_plan_id))
                         <div class="absolute top-0 right-0 bg-primary-500 text-white text-[10px] font-black uppercase px-4 py-1 rounded-bl-xl tracking-widest">Atual</div>
@@ -68,21 +78,29 @@
 
                     <div class="mb-8">
                         <span class="text-4xl font-black text-gray-900 dark:text-white">R$ {{ number_format($plan->price, 2, ',', '.') }}</span>
-                        <span class="text-gray-500">/mês</span>
+                        <span class="text-gray-500">/{{ $periodLabel }}</span>
                     </div>
 
                     <ul class="space-y-4 mb-8 flex-1">
                         <li class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
                             <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Até {{ $plan->max_patients ?? 'Ilimitados' }} pacientes
+                            Até {{ $plan->limit_patients ?? 'Ilimitados' }} pacientes
                         </li>
                         <li class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
                             <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Até {{ $plan->max_professionals ?? 'Ilimitados' }} profissionais
+                            Até {{ $plan->limit_professionals ?? 'Ilimitados' }} profissionais
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Até {{ $plan->limit_secretaries ?? 'Ilimitadas' }} secretárias
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Até {{ $plan->limit_rooms ?? 'Ilimitadas' }} salas
                         </li>
                     </ul>
 
-                    @if(!$currentSubscription || !$currentSubscription->hasPrice($plan->stripe_plan_id))
+                    @if($canManageSubscription && (!$currentSubscription || !$currentSubscription->hasPrice($plan->stripe_plan_id)))
                         <form action="{{ route('subscription.checkout') }}" method="POST">
                             @csrf
                             <input type="hidden" name="plan_id" value="{{ $plan->stripe_plan_id }}">
@@ -90,9 +108,13 @@
                                 Assinar Agora
                             </button>
                         </form>
-                    @else
+                    @elseif($currentSubscription && $currentSubscription->hasPrice($plan->stripe_plan_id))
                         <button disabled class="w-full py-4 bg-gray-100 dark:bg-gray-700 text-gray-400 font-black rounded-2xl cursor-not-allowed">
                             Plano Atual
+                        </button>
+                    @else
+                        <button disabled class="w-full py-4 bg-gray-100 dark:bg-gray-700 text-gray-400 font-black rounded-2xl cursor-not-allowed">
+                            Solicite ao gestor
                         </button>
                     @endif
                 </div>

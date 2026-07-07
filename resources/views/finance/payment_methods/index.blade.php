@@ -33,7 +33,7 @@
                             <td class="px-6 py-4">{{ $method->requires_bank_account ? 'Obrigatória' : 'Opcional' }}</td>
                             <td class="px-6 py-4">{{ $method->is_active ? 'Ativa' : 'Inativa' }}</td>
                             <td class="px-6 py-4 text-right">
-                                <a href="{{ route('payment-methods.edit', $method) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</a>
+                                <a href="{{ route('payment-methods.edit', $method) }}" class="font-medium text-primary-600 dark:text-primary-400 hover:underline">Editar</a>
                                 <form method="POST" action="{{ route('payment-methods.destroy', $method) }}" class="inline ml-3" onsubmit="return confirmDelete(this, 'Desativar esta forma de pagamento?');">
                                     @csrf
                                     @method('DELETE')

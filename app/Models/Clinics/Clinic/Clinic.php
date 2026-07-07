@@ -2,6 +2,9 @@
 
 namespace App\Models\Clinics\Clinic;
 
+use App\Models\Clinics\Clinic\Patient\Patient;
+use App\Models\Clinics\Clinic\Room\Room;
+use App\Models\SAAS\SubscriptionPlan;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -37,5 +40,42 @@ class Clinic extends Model
     public function patients(): HasMany
     {
         return $this->hasMany(Patient::class);
+    }
+
+    public function rooms(): HasMany
+    {
+        return $this->hasMany(Room::class);
+    }
+
+    public function currentSubscriptionPlan(): ?SubscriptionPlan
+    {
+        $subscription = $this->subscription('default');
+
+        if (! $subscription || ! $subscription->valid()) {
+            return null;
+        }
+
+        $stripePrice = $subscription->stripe_price
+            ?? $subscription->items()->first()?->stripe_price;
+
+        if (! $stripePrice) {
+            return null;
+        }
+
+        return SubscriptionPlan::where('stripe_plan_id', $stripePrice)->first();
+    }
+
+    public function subscriptionLimit(string $limitColumn): ?int
+    {
+        $limit = $this->currentSubscriptionPlan()?->{$limitColumn};
+
+        return $limit === null ? null : (int) $limit;
+    }
+
+    public function hasReachedSubscriptionLimit(string $limitColumn, int $currentCount): bool
+    {
+        $limit = $this->subscriptionLimit($limitColumn);
+
+        return $limit !== null && $currentCount >= $limit;
     }
 }

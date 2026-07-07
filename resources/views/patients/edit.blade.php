@@ -87,14 +87,14 @@
 
                     {{-- Contato de Emergência --}}
                     <div>
-                        <x-input-label for="emergency_contact_name" :value="__('Nome Contato Emergência')" />
+                        <x-input-label for="emergency_contact_name" :value="__('Contato de Emergência')" />
                         <x-text-input id="emergency_contact_name" name="emergency_contact_name" type="text" class="mt-1 block w-full" :value="old('emergency_contact_name', $patient->emergency_contact_name)" />
                         <x-input-error class="mt-2" :messages="$errors->get('emergency_contact_name')" />
                     </div>
 
                     {{-- Telefone de Emergência --}}
                     <div>
-                        <x-input-label for="emergency_contact_phone" :value="__('Telefone Emergência')" />
+                        <x-input-label for="emergency_contact_phone" :value="__('Telefone do Contato')" />
                         <x-text-input id="emergency_contact_phone" name="emergency_contact_phone" type="text" class="mt-1 block w-full" :value="old('emergency_contact_phone', $patient->emergency_contact_phone)" placeholder="+55 (00) 00000-0000" data-mask="phone" />
                         <x-input-error class="mt-2" :messages="$errors->get('emergency_contact_phone')" />
                     </div>

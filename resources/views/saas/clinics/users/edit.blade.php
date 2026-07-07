@@ -12,7 +12,7 @@
         <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
             <li class="inline-flex items-center">
                 <a href="{{ route('dashboard') }}" aria-current="page"
-                   class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
+                   class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-400 dark:hover:text-white">
                     <svg class="w-3 h-3 pr-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                          viewBox="0 0 20 20">
                         <path
@@ -29,7 +29,7 @@
                               d="m1 9 4-4-4-4"/>
                     </svg>
                     <a href="{{ route('clinic-users.index') }}"
-                       class="ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">Usuários</a>
+                       class="ms-1 text-sm font-medium text-gray-700 hover:text-primary-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">Usuários</a>
                 </div>
             </li>
             <li aria-current="page">
@@ -58,7 +58,7 @@
                     </p>
                 </div>
                 <a href="{{ route('clinic-users.index') }}"
-                   class="text-sm font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                   class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline">
                     &larr; Voltar para a lista
                 </a>
             </div>
@@ -73,7 +73,7 @@
                         <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nome
                             Completo</label>
                         <input type="text" name="name" id="name"
-                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                placeholder="Ex: João da Silva" value="{{ $user->name ?? old('name') }}" required>
                         @error('name')
                         <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
@@ -85,7 +85,7 @@
                         <label for="email"
                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">E-mail</label>
                         <input type="email" name="email" id="email"
-                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                placeholder="usuario@email.com" value="{{ $user->email ?? old('email') }}" required>
                         @error('email')
                         <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
@@ -97,7 +97,7 @@
                         <label for="password"
                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Senha</label>
                         <input type="password" name="password" id="password"
-                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                placeholder="••••••••">
                         @error('password')
                         <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
@@ -109,7 +109,7 @@
                         <label for="role" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Perfil de
                             Acesso</label>
                         <select id="role" name="role"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 required onchange="toggleColorPicker(this.value)">
                             <option selected disabled value="">Selecione um perfil</option>
                             {{-- O loop de roles virá aqui. Exemplo: --}}
@@ -159,7 +159,7 @@
                 {{-- Botão de Submissão --}}
                 <div class="mt-6 flex justify-end">
                     <button type="submit"
-                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            class="text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-200 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-primary-500 dark:hover:bg-primary-600 dark:focus:ring-primary-800">
                         Atualizar Usuário
                     </button>
                 </div>

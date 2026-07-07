@@ -35,7 +35,7 @@
                 <div class="group bg-white dark:bg-gray-800 overflow-hidden shadow-lg hover:shadow-xl rounded-2xl border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:scale-[1.02]">
                     <div class="p-5">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-3 shadow-md shadow-blue-500/25">
+                            <div class="flex-shrink-0 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl p-3 shadow-md shadow-primary-500/25">
                                 <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
@@ -91,7 +91,7 @@
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Atend. Particulares</dt>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Atendimentos Particulares</dt>
                                     <dd class="text-2xl font-bold text-gray-900 dark:text-white">{{ $appointmentsPrivate }}</dd>
                                 </dl>
                             </div>
@@ -113,7 +113,7 @@
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Atend. Convênio</dt>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Atendimentos por Convênio</dt>
                                     <dd class="text-2xl font-bold text-gray-900 dark:text-white">{{ $appointmentsByInsurance }}</dd>
                                 </dl>
                             </div>
@@ -130,7 +130,7 @@
                 <div class="bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow duration-200">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                            <span class="w-1 h-6 bg-indigo-500 rounded-full"></span>
+                            <span class="w-1 h-6 bg-primary-500 rounded-full"></span>
                             Tipos de Atendimento
                         </h3>
                         <span class="text-xs text-gray-400">Hoje</span>
@@ -144,7 +144,7 @@
                                 </div>
                                 <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                                     @php $percent = $totalAppointmentsToday > 0 ? ($count / $totalAppointmentsToday) * 100 : 0; @endphp
-                                    <div class="bg-gradient-to-r from-indigo-500 to-indigo-400 h-2 rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
+                                    <div class="bg-gradient-to-r from-primary-500 to-primary-400 h-2 rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
                                 </div>
                             </div>
                         @empty
@@ -201,7 +201,7 @@
                                         <li class="group bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200">
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
-                                                    <span class="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold text-[10px]">
+                                                    <span class="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-bold text-[10px]">
                                                         {{ $appointment->start_time->format('H:i') }}
                                                     </span>
                                                 </div>
@@ -217,7 +217,7 @@
                                                     @if($appointment->status === 'confirmed')
                                                         <span class="h-2 w-2 rounded-full bg-emerald-500 block" title="Confirmado"></span>
                                                     @elseif($appointment->status === 'completed')
-                                                        <span class="h-2 w-2 rounded-full bg-blue-500 block" title="Concluído"></span>
+                                                        <span class="h-2 w-2 rounded-full bg-primary-500 block" title="Concluído"></span>
                                                     @elseif($appointment->status === 'cancelled')
                                                         <span class="h-2 w-2 rounded-full bg-red-500 block" title="Cancelado"></span>
                                                     @else
@@ -296,9 +296,9 @@
                                 <span class="text-xs font-medium text-emerald-700 dark:text-emerald-300">Novo Agendamento</span>
                             </a>
                             <a href="{{ route('patients.create') }}"
-                               class="flex flex-col items-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl hover:from-blue-100 hover:to-blue-200 dark:hover:from-blue-900/30 dark:hover:to-blue-800/30 transition-all duration-200 border border-blue-100 dark:border-blue-800/30 group">
+                               class="flex flex-col items-center p-4 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-xl hover:from-primary-100 hover:to-primary-200 dark:hover:from-primary-900/30 dark:hover:to-primary-800/30 transition-all duration-200 border border-primary-100 dark:border-primary-800/30 group">
                                 <span class="text-2xl mb-2 group-hover:scale-110 transition-transform">👤</span>
-                                <span class="text-xs font-medium text-blue-700 dark:text-blue-300">Novo Paciente</span>
+                                <span class="text-xs font-medium text-primary-700 dark:text-primary-300">Novo Paciente</span>
                             </a>
                         </div>
                     </div>

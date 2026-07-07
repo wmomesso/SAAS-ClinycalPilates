@@ -173,7 +173,7 @@
                                 'no_show' => 'Falta',
                             ];
                             $appointmentStatusClasses = [
-                                'scheduled' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+                                'scheduled' => 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300',
                                 'confirmed' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
                                 'completed' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
                                 'canceled' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
@@ -273,7 +273,7 @@
                                                 <div class="flex items-center gap-2">
                                                     <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $evolution->professional->name }}</span>
                                                     @if($evolution->type)
-                                                        <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full {{ $evolution->type === 'evaluation' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700' }}">
+                                                        <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full {{ $evolution->type === 'evaluation' ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-700' }}">
                                                             {{ $evolution->type }}
                                                         </span>
                                                     @endif
@@ -316,7 +316,7 @@
                                         $receivableStatusClasses = [
                                             'pending' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200',
                                             'received' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200',
-                                            'partially_received' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200',
+                                            'partially_received' => 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-200',
                                             'canceled' => 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200',
                                         ];
                                         $receivableStatusLabels = [
@@ -400,9 +400,9 @@
                                 <p class="text-xs font-semibold uppercase text-red-700 dark:text-red-300">Perdidas</p>
                                 <p class="mt-1 text-2xl font-black text-red-700 dark:text-red-300">{{ $packageTotals['missed'] }}</p>
                             </div>
-                            <div class="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
-                                <p class="text-xs font-semibold uppercase text-blue-700 dark:text-blue-300">Restantes</p>
-                                <p class="mt-1 text-2xl font-black text-blue-700 dark:text-blue-300">{{ $packageTotals['remaining'] }}</p>
+                            <div class="p-4 rounded-2xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800">
+                                <p class="text-xs font-semibold uppercase text-primary-700 dark:text-primary-300">Restantes</p>
+                                <p class="mt-1 text-2xl font-black text-primary-700 dark:text-primary-300">{{ $packageTotals['remaining'] }}</p>
                             </div>
                         </div>
 
@@ -527,7 +527,7 @@
                                             </div>
                                             <div>
                                                 <p class="text-xs text-gray-500">Restantes</p>
-                                                <p class="text-sm font-bold text-blue-600">{{ $patientPackage->remaining_sessions }}</p>
+                                                <p class="text-sm font-bold text-primary-600">{{ $patientPackage->remaining_sessions }}</p>
                                             </div>
                                         </div>
                                     </div>

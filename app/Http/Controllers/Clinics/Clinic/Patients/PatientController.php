@@ -11,6 +11,7 @@ use App\Models\Clinics\Clinic\Finance\ServicePackage;
 use App\Models\Clinics\Clinic\Patient\Patient;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -79,6 +80,14 @@ class PatientController extends Controller
      */
     public function store(StorePatientRequest $request)
     {
+        $clinic = Auth::user()->clinic;
+
+        if ($clinic && $clinic->hasReachedSubscriptionLimit('limit_patients', $clinic->patients()->count())) {
+            return back()
+                ->withErrors(['full_name' => 'O limite de pacientes do plano contratado foi atingido.'])
+                ->withInput();
+        }
+
         Patient::create($request->validated());
 
         return redirect()->route('patients.index')
