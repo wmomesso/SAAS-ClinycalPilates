@@ -19,7 +19,7 @@ class EnsureClinicHasActiveSubscription
         $clinic = $user->clinic;
         abort_unless($clinic, 403);
 
-        if ($clinic->subscribed('default')) {
+        if ($clinic->hasActiveSubscriptionOrTrial()) {
             return $next($request);
         }
 

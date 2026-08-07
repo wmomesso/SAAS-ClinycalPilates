@@ -21,26 +21,28 @@ class ServicePackagePolicy
 
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->hasRole('admin-clinica')
+            || $user->can('visualizar-financeiro')
+            || $user->can('gerenciar-financeiro');
     }
 
     public function view(User $user, ServicePackage $servicePackage): bool
     {
-        return $user->clinic_id === $servicePackage->clinic_id;
+        return $user->clinic_id === $servicePackage->clinic_id && $this->viewAny($user);
     }
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasRole('admin-clinica') || $user->can('gerenciar-financeiro');
     }
 
     public function update(User $user, ServicePackage $servicePackage): bool
     {
-        return $user->clinic_id === $servicePackage->clinic_id;
+        return $user->clinic_id === $servicePackage->clinic_id && $this->create($user);
     }
 
     public function delete(User $user, ServicePackage $servicePackage): bool
     {
-        return $user->clinic_id === $servicePackage->clinic_id;
+        return $user->clinic_id === $servicePackage->clinic_id && $this->create($user);
     }
 }

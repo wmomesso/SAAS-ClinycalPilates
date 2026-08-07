@@ -83,6 +83,7 @@
                 <th scope="col" class="px-6 py-3">
                     Perfil
                 </th>
+                <th scope="col" class="px-6 py-3">Status</th>
                 <th scope="col" class="px-6 py-3">
                     Cor
                 </th>
@@ -109,6 +110,11 @@
                             {{ $role->name }}
                         </span>
                     @endforeach
+                </td>
+                <td class="px-6 py-4">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $user->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                        {{ $user->is_active ? 'Ativo' : 'Inativo' }}
+                    </span>
                 </td>
                 <td class="px-6 py-4">
                     @if($user->hasRole('profissional') && $user->calendar_color)

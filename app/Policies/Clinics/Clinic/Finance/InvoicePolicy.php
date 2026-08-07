@@ -23,7 +23,7 @@ class InvoicePolicy
 
     public function view(User $user, Invoice $invoice): bool
     {
-        return $user->clinic_id === $invoice->clinic_id;
+        return $user->clinic_id === $invoice->clinic_id && $this->viewAny($user);
     }
 
     public function create(User $user): bool

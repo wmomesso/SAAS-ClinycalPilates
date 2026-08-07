@@ -21,7 +21,7 @@ class PatientIndexTest extends TestCase
     {
         parent::setUp();
 
-        $this->clinic = Clinic::factory()->create();
+        $this->clinic = Clinic::factory()->create(['trial_ends_at' => now()->addDays(7)]);
         $this->user = User::factory()->create(['clinic_id' => $this->clinic->id]);
 
         Role::findOrCreate('profissional');

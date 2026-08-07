@@ -15,6 +15,8 @@ class StorePatientRequest extends FormRequest
 
     public function rules(): array
     {
+        $clinicId = $this->user()->clinic_id;
+
         return [
             'full_name' => ['required', 'string', 'max:255'],
             'birth_date' => ['required', 'date', 'before:today'],
@@ -22,7 +24,9 @@ class StorePatientRequest extends FormRequest
                 'nullable',
                 'string',
                 new Cpf,
-                Rule::unique('patients')->ignore($this->patient),
+                Rule::unique('patients', 'document_cpf')
+                    ->where(fn ($query) => $query->where('clinic_id', $clinicId))
+                    ->ignore($this->patient),
             ],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:50'],

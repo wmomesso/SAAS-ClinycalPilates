@@ -32,7 +32,10 @@ class EvolutionController extends Controller
 
     public function destroy(Evolution $evolution)
     {
-        $this->authorize('update', $evolution->patient);
+        $patient = $evolution->patient;
+        abort_unless($patient, 404);
+        abort_unless(auth()->user()->hasAnyRole(['admin-clinica', 'super-admin']), 403);
+        $this->authorize('update', $patient);
 
         $evolution->delete();
 

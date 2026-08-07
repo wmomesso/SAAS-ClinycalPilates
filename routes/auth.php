@@ -17,6 +17,13 @@ Route::middleware('guest')->group(function () {
 
     Route::post('register', [RegisteredUserController::class, 'store']);
 
+    Route::get('register/complete', [RegisteredUserController::class, 'complete'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('register.complete');
+
+    Route::post('register/complete', [RegisteredUserController::class, 'completeStore'])
+        ->middleware(['signed', 'throttle:6,1']);
+
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 

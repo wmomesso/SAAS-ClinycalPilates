@@ -21,26 +21,27 @@ class ServiceTypePolicy
 
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->clinic_id !== null
+            && ($user->can('visualizar-agenda-profissionais') || $user->can('gerenciar-agenda-profissionais'));
     }
 
     public function view(User $user, ServiceType $serviceType): bool
     {
-        return $user->clinic_id === $serviceType->clinic_id;
+        return $user->clinic_id === $serviceType->clinic_id && $this->viewAny($user);
     }
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasRole('admin-clinica') || $user->can('gerenciar-agenda-profissionais');
     }
 
     public function update(User $user, ServiceType $serviceType): bool
     {
-        return $user->clinic_id === $serviceType->clinic_id;
+        return $user->clinic_id === $serviceType->clinic_id && $this->create($user);
     }
 
     public function delete(User $user, ServiceType $serviceType): bool
     {
-        return $user->clinic_id === $serviceType->clinic_id;
+        return $user->clinic_id === $serviceType->clinic_id && $this->create($user);
     }
 }

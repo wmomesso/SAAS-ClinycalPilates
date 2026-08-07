@@ -8,6 +8,7 @@
         $clinicUrl = $clinic->subdomain && $domain ? $clinic->subdomain.'.'.$domain : null;
         $statusLabel = $subscription?->stripe_status ?? 'Sem assinatura';
         $periodLabel = ['monthly' => 'Mensal', 'yearly' => 'Anual'][$subscriptionPlan?->billing_period] ?? null;
+        $onTrial = $clinic->onGenericTrial();
     @endphp
 
     <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -82,7 +83,9 @@
     <section class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 class="text-lg font-bold text-gray-900 dark:text-white">Assinatura</h2>
-            @if($isSubscribed)
+            @if($onTrial)
+                <span class="w-fit rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">Teste grátis</span>
+            @elseif($isSubscribed)
                 <span class="w-fit rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">Ativa</span>
             @else
                 <span class="w-fit rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-400">Inativa / Inadimplente</span>
@@ -105,6 +108,10 @@
             <div>
                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Fim da assinatura</p>
                 <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $subscription?->ends_at?->format('d/m/Y') ?? 'Não informado' }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Fim do teste grátis</p>
+                <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ $clinic->trialEndsAt()?->format('d/m/Y') ?? 'Não informado' }}</p>
             </div>
         </div>
 

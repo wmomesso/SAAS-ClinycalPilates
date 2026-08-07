@@ -33,10 +33,14 @@
                             @php
                                 $isSubscribed = false;
                                 try {
-                                    $isSubscribed = $clinic->subscribed();
+                                    $isSubscribed = $clinic->hasActiveSubscriptionOrTrial();
                                 } catch (\Exception $e) {}
                             @endphp
-                            @if($isSubscribed)
+                            @if($clinic->onGenericTrial())
+                                <span class="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full dark:bg-blue-900/30 dark:text-blue-400">
+                                    Teste grátis
+                                </span>
+                            @elseif($isSubscribed)
                                 <span class="px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full dark:bg-green-900/30 dark:text-green-400">
                                     Ativa
                                 </span>

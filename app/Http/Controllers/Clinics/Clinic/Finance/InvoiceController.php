@@ -8,6 +8,7 @@ use App\Models\Clinics\Clinic\Finance\Invoice;
 use App\Models\Clinics\Clinic\Finance\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class InvoiceController extends Controller
 {
@@ -83,6 +84,15 @@ class InvoiceController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $invoice) {
+            $invoice = Invoice::query()->lockForUpdate()->findOrFail($invoice->id);
+            $outstanding = max(0, (float) $invoice->total_amount - (float) $invoice->amount_paid);
+
+            if ((float) $request->amount > $outstanding) {
+                throw ValidationException::withMessages([
+                    'amount' => 'O pagamento não pode exceder o saldo em aberto de R$ '.number_format($outstanding, 2, ',', '.'),
+                ]);
+            }
+
             // Regista a transação
             Transaction::create([
                 'invoice_id' => $invoice->id,

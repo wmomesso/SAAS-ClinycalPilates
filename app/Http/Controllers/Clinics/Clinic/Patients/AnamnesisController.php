@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Clinics\Clinic\Patients;
 use App\Http\Controllers\Controller;
 use App\Models\Clinics\Clinic\Patient\Anamnesis;
 use App\Models\Clinics\Clinic\Patient\Patient;
+use App\Models\SecurityAuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,7 +33,10 @@ class AnamnesisController extends Controller
 
     public function show(Anamnesis $anamnesis)
     {
-        $this->authorize('view', $anamnesis->patient);
+        $patient = $anamnesis->patient;
+        abort_unless($patient, 404);
+        $this->authorize('view', $patient);
+        SecurityAuditLog::record('viewed_anamnesis', $anamnesis);
 
         return response()->json($anamnesis->load('professional'));
     }

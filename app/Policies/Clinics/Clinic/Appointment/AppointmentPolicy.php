@@ -25,7 +25,8 @@ class AppointmentPolicy
     public function viewAny(User $user): bool
     {
         // Todos os usuários da clínica podem ver a agenda.
-        return $user->clinic_id !== null;
+        return $user->clinic_id !== null
+            && ($user->can('visualizar-agenda-profissionais') || $user->hasRole('profissional'));
     }
 
     /**
@@ -33,7 +34,7 @@ class AppointmentPolicy
      */
     public function view(User $user, Appointment $appointment): bool
     {
-        return $user->clinic_id === $appointment->clinic_id;
+        return $user->clinic_id === $appointment->clinic_id && $this->viewAny($user);
     }
 
     /**

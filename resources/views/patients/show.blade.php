@@ -284,13 +284,15 @@
                                                 @if($evolution->title)
                                                     <span class="text-xs font-medium text-gray-500">{{ $evolution->title }}</span>
                                                 @endif
-                                                <form action="{{ route('evolutions.destroy', $evolution) }}" method="POST" onsubmit="return confirmDelete(this, 'Tem certeza que deseja remover esta evolução?')">
+                                                @if(auth()->user()->hasAnyRole(['admin-clinica', 'super-admin']))
+                                                <form action="{{ route('evolutions.destroy', $evolution) }}" method="POST" onsubmit="return confirmDelete(this, 'Tem certeza que deseja arquivar esta evolução? O histórico de auditoria será preservado.')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="text-gray-400 hover:text-red-500 transition-colors">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                                     </button>
                                                 </form>
+                                                @endif
                                             </div>
                                         </div>
                                         <p class="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line">
@@ -596,9 +598,10 @@
                                         </div>
                                     </div>
                                     <div class="flex gap-2">
-                                        <a href="{{ Storage::url($document->file_path) }}" target="_blank" class="text-gray-400 hover:text-primary-500">
+                                        <a href="{{ route('documents.download', $document) }}" class="text-gray-400 hover:text-primary-500" title="Baixar documento protegido">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                         </a>
+                                        @if(auth()->user()->hasAnyRole(['admin-clinica', 'super-admin']))
                                         <form action="{{ route('documents.destroy', $document) }}" method="POST" onsubmit="return confirmDelete(this, 'Excluir este documento?')">
                                             @csrf
                                             @method('DELETE')
@@ -606,6 +609,7 @@
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </div>
                             @empty
@@ -630,6 +634,70 @@
                         <p class="text-sm text-gray-600 dark:text-gray-400">{{ $patient->lifestyle_habits }}</p>
                     </div>
                 @endif
+            </div>
+
+            {{-- Consentimentos e base legal (LGPD) --}}
+            <div class="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-6">
+                @php
+                    $consentLabels = [
+                        'treatment' => 'Atendimento e tratamento',
+                        'data_processing' => 'Tratamento de dados pessoais e de saúde',
+                        'whatsapp_messages' => 'Mensagens por WhatsApp',
+                        'image_use' => 'Uso de imagem',
+                    ];
+                @endphp
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white">Consentimentos</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Registro versionado; uma revogação preserva o histórico.</p>
+
+                <div class="mt-4 space-y-2">
+                    @forelse($patient->consents as $consent)
+                        <div class="flex flex-col gap-2 rounded-xl border border-gray-100 p-3 dark:border-gray-700 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $consentLabels[$consent->type] ?? $consent->type }}</p>
+                                <p class="text-xs text-gray-500">Versão {{ $consent->document_version }} · concedido em {{ $consent->granted_at->format('d/m/Y H:i') }} por {{ $consent->recordedBy?->name ?? 'Sistema' }}</p>
+                                @if($consent->revoked_at)
+                                    <p class="text-xs font-medium text-red-600">Revogado em {{ $consent->revoked_at->format('d/m/Y H:i') }}</p>
+                                @endif
+                            </div>
+                            @unless($consent->revoked_at)
+                                <form method="POST" action="{{ route('patient-consents.revoke', $consent) }}" onsubmit="return confirm('Confirmar a revogação deste consentimento?')">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button class="text-xs font-semibold text-red-600 hover:underline">Revogar</button>
+                                </form>
+                            @endunless
+                        </div>
+                    @empty
+                        <p class="rounded-xl bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-200">Nenhum consentimento registrado.</p>
+                    @endforelse
+                </div>
+
+                <form method="POST" action="{{ route('patients.consents.store', $patient) }}" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
+                    @csrf
+                    <div>
+                        <x-input-label for="consent_type" value="Tipo" />
+                        <select id="consent_type" name="type" class="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" required>
+                            @foreach($consentLabels as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <x-input-label for="document_version" value="Versão do termo" />
+                        <x-text-input id="document_version" name="document_version" value="1.0" class="mt-1 block w-full" required />
+                    </div>
+                    <div class="md:col-span-2">
+                        <x-input-label for="consent_notes" value="Observações (opcional)" />
+                        <textarea id="consent_notes" name="notes" rows="2" class="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"></textarea>
+                    </div>
+                    <label class="md:col-span-2 flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                        <input type="checkbox" name="confirmation" value="1" class="mt-1 rounded border-gray-300 text-primary-600" required>
+                        Confirmo que o paciente ou responsável recebeu o termo desta versão e manifestou consentimento livre e informado.
+                    </label>
+                    <div class="md:col-span-2 flex justify-end">
+                        <x-primary-button>Registrar consentimento</x-primary-button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

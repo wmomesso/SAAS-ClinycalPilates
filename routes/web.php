@@ -6,11 +6,16 @@ use App\Http\Controllers\Clinics\Clinic\Finance\InvoiceController;
 use App\Http\Controllers\Clinics\Clinic\Finance\ServicePackageController;
 use App\Http\Controllers\Clinics\Clinic\HealthInsurance\HealthInsuranceController;
 use App\Http\Controllers\Clinics\Clinic\HealthInsurance\InsuranceGuideController;
+use App\Http\Controllers\Clinics\Clinic\Patients\PatientConsentController;
 use App\Http\Controllers\Clinics\Clinic\Patients\PatientController;
 use App\Http\Controllers\Clinics\Clinic\RolePermissionController;
 use App\Http\Controllers\Clinics\Clinic\Rooms\RoomController;
+use App\Http\Controllers\Clinics\Clinic\SecurityAuditLogController;
 use App\Http\Controllers\Clinics\Clinic\Services\ServiceTypeController;
 use App\Http\Controllers\Clinics\Clinic\Subscriptions\SubscriptionController;
+use App\Http\Controllers\Clinics\Clinic\WareHouse\StockItemController;
+use App\Http\Controllers\Clinics\Clinic\WhatsAppAutomationController;
+use App\Http\Controllers\Clinics\Clinic\WhatsAppPatientTaskController;
 use App\Http\Controllers\Clinics\Finance\BankAccountController;
 use App\Http\Controllers\Clinics\Finance\BankReconciliationController;
 use App\Http\Controllers\Clinics\Finance\FinancialReportController;
@@ -26,9 +31,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', \App\Http\Controllers\Clinics\Clinic\DashboardController::class)->middleware(['auth', 'verified', 'active.clinic.subscription'])->name('dashboard');
+Route::get('/dashboard', \App\Http\Controllers\Clinics\Clinic\DashboardController::class)->middleware(['auth', 'active.user', 'verified', 'active.clinic.subscription'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'active.user', 'verified'])->group(function () {
     // Perfil do Usuário
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -41,6 +46,12 @@ Route::middleware('auth')->group(function () {
         Route::put('clinic-settings', [ClinicController::class, 'update'])->name('clinic.update');
         Route::get('roles/{role}/permissions', [RolePermissionController::class, 'index'])->name('roles.permissions.index');
         Route::post('roles/{role}/permissions', [RolePermissionController::class, 'update'])->name('roles.permissions.update');
+        Route::get('security/audit-logs', [SecurityAuditLogController::class, 'index'])->name('security.audit-logs.index');
+        Route::get('whatsapp-automation', [WhatsAppAutomationController::class, 'index'])->name('whatsapp-automation.index');
+        Route::post('whatsapp-automation/code', [WhatsAppAutomationController::class, 'store'])->name('whatsapp-automation.store');
+        Route::delete('whatsapp-automation/binding', [WhatsAppAutomationController::class, 'destroy'])->name('whatsapp-automation.destroy');
+        Route::get('whatsapp-patient-tasks', [WhatsAppPatientTaskController::class, 'index'])->name('whatsapp-patient-tasks.index');
+        Route::patch('whatsapp-patient-tasks/{task}/complete', [WhatsAppPatientTaskController::class, 'complete'])->name('whatsapp-patient-tasks.complete');
 
         // Sprint 2: Gestão de Pacientes
         // O resource cria automaticamente rotas para index, create, store, show, edit, update e destroy
@@ -52,14 +63,25 @@ Route::middleware('auth')->group(function () {
             Route::post('documents', [\App\Http\Controllers\Clinics\Clinic\Patients\PatientDocumentController::class, 'store'])->name('documents.store');
             Route::post('anamneses', [\App\Http\Controllers\Clinics\Clinic\Patients\AnamnesisController::class, 'store'])->name('anamneses.store');
             Route::get('anamneses/compare', [\App\Http\Controllers\Clinics\Clinic\Patients\AnamnesisController::class, 'compare'])->name('anamneses.compare');
+            Route::post('consents', [PatientConsentController::class, 'store'])->name('consents.store');
         });
+        Route::patch('patient-consents/{consent}/revoke', [PatientConsentController::class, 'revoke'])->name('patient-consents.revoke');
         Route::delete('evolutions/{evolution}', [\App\Http\Controllers\Clinics\Clinic\Patients\EvolutionController::class, 'destroy'])->name('evolutions.destroy');
         Route::delete('documents/{document}', [\App\Http\Controllers\Clinics\Clinic\Patients\PatientDocumentController::class, 'destroy'])->name('documents.destroy');
+        Route::get('documents/{document}/download', [\App\Http\Controllers\Clinics\Clinic\Patients\PatientDocumentController::class, 'download'])->name('documents.download');
         Route::get('anamneses/{anamnesis}', [\App\Http\Controllers\Clinics\Clinic\Patients\AnamnesisController::class, 'show'])->name('anamneses.show');
 
         // --- Sprint 3: Gestão de Salas ---
         // Namespace: App\Http\Controllers\Clinics\Clinic\Rooms
         Route::resource('rooms', RoomController::class);
+
+        // Estoque de insumos e materiais
+        Route::get('stock-items', [StockItemController::class, 'index'])->name('stock-items.index');
+        Route::post('stock-items', [StockItemController::class, 'store'])->name('stock-items.store');
+        Route::put('stock-items/{stock_item}', [StockItemController::class, 'update'])->name('stock-items.update');
+        Route::delete('stock-items/{stock_item}', [StockItemController::class, 'destroy'])->name('stock-items.destroy');
+        Route::post('stock-items/{stock_item}/movements', [StockItemController::class, 'movement'])->name('stock-items.movements.store');
+        Route::post('stock-items/{stock_item}/maintenance', [StockItemController::class, 'maintenance'])->name('stock-items.maintenance.store');
 
         // --- Sprint 4: Gestão de Agendamentos e Serviços ---
         Route::resource('service-types', ServiceTypeController::class);

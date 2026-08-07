@@ -93,7 +93,7 @@ class ClinicController extends Controller
         try {
             $subscription = $clinic->subscription('default');
             $subscriptionPlan = $clinic->currentSubscriptionPlan();
-            $isSubscribed = $clinic->subscribed();
+            $isSubscribed = $clinic->hasActiveSubscriptionOrTrial();
         } catch (\Throwable) {
             //
         }

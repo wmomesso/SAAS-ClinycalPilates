@@ -39,6 +39,7 @@ class UserPolicy
     {
         return $this->sameClinicAdmin($user, $target)
             && $user->id !== $target->id
+            && $target->clinic?->owner_id !== $target->id
             && ! $target->hasRole('super-admin');
     }
 

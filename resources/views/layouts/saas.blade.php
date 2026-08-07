@@ -418,6 +418,15 @@
                     </a>
                 </li>
 
+                @can('viewAny', App\Models\Clinics\Clinic\WareHouse\StockItem::class)
+                <li>
+                    <a href="{{ route('stock-items.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 group {{ request()->routeIs('stock-items.*') ? 'bg-primary-50/80 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 shadow-sm ring-1 ring-primary-500/10' : '' }}">
+                        <div class="flex items-center justify-center"><svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>
+                        <span class="font-semibold text-sm">Estoque e Equip.</span>
+                    </a>
+                </li>
+                @endcan
+
                 {{-- Financeiro --}}
                 <li>
                     <button type="button" class="flex items-center w-full gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 group {{ request()->routeIs('invoices.*') || request()->routeIs('service-packages.*') || request()->routeIs('service-types.*') || request()->routeIs('bank-accounts.*') || request()->routeIs('bank-reconciliation.*') || request()->routeIs('payment-methods.*') || request()->routeIs('financial-reports.*') || request()->routeIs('payables.*') || request()->routeIs('receivables.*') ? 'bg-primary-50/80 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400' : '' }}" data-collapse-toggle="dropdown-financeiro">
@@ -462,6 +471,32 @@
                 @endunless
 
                 @unless(auth()->user()->hasRole('super-admin'))
+                {{-- Automação pelo WhatsApp --}}
+                <li>
+                    <a href="{{ route('whatsapp-automation.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 group {{ request()->routeIs('whatsapp-automation.*') ? 'bg-primary-50/80 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 shadow-sm ring-1 ring-primary-500/10' : '' }}">
+                        <div class="flex items-center justify-center transition-transform group-hover:scale-110">
+                            <svg class="w-5 h-5 {{ request()->routeIs('whatsapp-automation.*') ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16l-4 4v-4a8 8 0 118 3.75"/>
+                            </svg>
+                        </div>
+                        <span class="font-semibold text-sm">Automação pelo WhatsApp</span>
+                    </a>
+                </li>
+                @if(auth()->user()->hasAnyRole(['admin-clinica', 'recepcionista']))
+                <li>
+                    <a href="{{ route('whatsapp-patient-tasks.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 group {{ request()->routeIs('whatsapp-patient-tasks.*') ? 'bg-primary-50/80 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 shadow-sm ring-1 ring-primary-500/10' : '' }}">
+                        <div class="flex items-center justify-center transition-transform group-hover:scale-110">
+                            <svg class="w-5 h-5 {{ request()->routeIs('whatsapp-patient-tasks.*') ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6m-6 4h4"/>
+                            </svg>
+                        </div>
+                        <span class="font-semibold text-sm">Solicitações WhatsApp</span>
+                    </a>
+                </li>
+                @endif
+                @endunless
+
+                @unless(auth()->user()->hasRole('super-admin'))
                 {{-- Assinatura --}}
                 <li>
                     <a href="{{ route('subscription.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 group {{ request()->routeIs('subscription.index') ? 'bg-primary-50/80 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 shadow-sm ring-1 ring-primary-500/10' : '' }}">
@@ -488,6 +523,17 @@
                     </a>
                 </li>
                 @endunless
+
+                @if(auth()->user()->hasRole('admin-clinica'))
+                <li>
+                    <a href="{{ route('security.audit-logs.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 group {{ request()->routeIs('security.audit-logs.*') ? 'bg-primary-50/80 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 shadow-sm ring-1 ring-primary-500/10' : '' }}">
+                        <div class="flex items-center justify-center">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        </div>
+                        <span class="font-semibold text-sm">Auditoria</span>
+                    </a>
+                </li>
+                @endif
 
                 {{-- Divisor --}}
                 <li class="py-2">

@@ -14,7 +14,15 @@ class StockItem extends Model
     use BelongsToClinic, HasFactory;
 
     protected $fillable = [
-        'clinic_id', 'name', 'description', 'sku', 'unit', 'quantity', 'min_stock_level',
+        'clinic_id', 'name', 'description', 'category', 'sku', 'serial_number', 'unit',
+        'quantity', 'min_stock_level', 'acquired_at', 'next_maintenance_at', 'equipment_status',
+    ];
+
+    protected $casts = [
+        'quantity' => 'integer',
+        'min_stock_level' => 'integer',
+        'acquired_at' => 'date',
+        'next_maintenance_at' => 'date',
     ];
 
     public function clinic(): BelongsTo
@@ -25,5 +33,10 @@ class StockItem extends Model
     public function movements(): HasMany
     {
         return $this->hasMany(StockMovement::class);
+    }
+
+    public function maintenanceLogs(): HasMany
+    {
+        return $this->hasMany(EquipmentMaintenanceLog::class)->latest('performed_at');
     }
 }

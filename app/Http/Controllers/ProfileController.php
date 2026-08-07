@@ -60,6 +60,12 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        if ($user->clinic?->owner_id === $user->id) {
+            return back()->withErrors([
+                'password' => 'O proprietário deve transferir a titularidade da clínica antes de excluir a conta.',
+            ], 'userDeletion');
+        }
+
         Auth::logout();
 
         $user->delete();

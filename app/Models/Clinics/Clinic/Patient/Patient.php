@@ -40,6 +40,16 @@ class Patient extends Model
         'address' => 'array',
     ];
 
+    protected $hidden = ['whatsapp_phone_hash'];
+
+    public function hasActiveWhatsAppConsent(): bool
+    {
+        return $this->consents()
+            ->where('type', 'whatsapp_messages')
+            ->whereNull('revoked_at')
+            ->exists();
+    }
+
     public function clinic(): BelongsTo
     {
         return $this->belongsTo(Clinic::class);
@@ -63,6 +73,11 @@ class Patient extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(PatientDocument::class);
+    }
+
+    public function consents(): HasMany
+    {
+        return $this->hasMany(PatientConsent::class)->latest('granted_at');
     }
 
     public function packages(): HasMany

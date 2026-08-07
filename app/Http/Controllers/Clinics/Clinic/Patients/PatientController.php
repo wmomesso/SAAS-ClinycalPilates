@@ -9,6 +9,7 @@ use App\Models\Clinics\Clinic\Finance\PatientPackage;
 use App\Models\Clinics\Clinic\Finance\Receivable;
 use App\Models\Clinics\Clinic\Finance\ServicePackage;
 use App\Models\Clinics\Clinic\Patient\Patient;
+use App\Models\SecurityAuditLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -99,6 +100,8 @@ class PatientController extends Controller
      */
     public function show(Patient $patient)
     {
+        SecurityAuditLog::record('viewed_medical_record', $patient);
+
         // Carrega relações para o prontuário
         $patient->load([
             'anamneses.professional',
@@ -107,6 +110,8 @@ class PatientController extends Controller
             'appointments.serviceType',
             'appointments.patientPackage.package.serviceType',
             'documents',
+            'consents.recordedBy',
+            'consents.revokedBy',
             'evolutions.professional',
             'receivables.bankAccount',
             'receivables.patientPackage.package',
@@ -131,7 +136,12 @@ class PatientController extends Controller
         $this->authorize('update', $patient);
 
         $data = $request->validate([
-            'service_package_id' => 'required|exists:service_packages,id',
+            'service_package_id' => [
+                'required',
+                Rule::exists('service_packages', 'id')->where(fn ($query) => $query
+                    ->where('clinic_id', auth()->user()->clinic_id)
+                    ->where('is_active', true)),
+            ],
             'start_date' => 'required|date',
             'price_paid' => 'nullable|numeric|min:0',
             'billing_type' => ['required', Rule::in(['single', 'monthly_recurring'])],

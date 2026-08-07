@@ -5,7 +5,6 @@ namespace App\Policies\Clinics\Clinic;
 use App\Models\Clinics\Clinic\Patient\Patient;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Auth\Access\Response;
 
 class PatientPolicy
 {
@@ -14,7 +13,7 @@ class PatientPolicy
     /**
      * O Super Admin pode tudo.
      */
-    public function before(User $user, string $ability): bool|null
+    public function before(User $user, string $ability): ?bool
     {
         if ($user->hasRole('super-admin')) {
             return true;
@@ -37,7 +36,8 @@ class PatientPolicy
     public function view(User $user, Patient $patient): bool
     {
         // O paciente deve pertencer à mesma clínica do utilizador
-        return $user->clinic_id === $patient->clinic_id;
+        return $user->clinic_id === $patient->clinic_id
+            && ($user->can('visualizar-pacientes') || $user->hasRole('profissional'));
     }
 
     /**

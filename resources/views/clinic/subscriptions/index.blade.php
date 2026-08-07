@@ -23,30 +23,34 @@
 @section('content')
     <div class="max-w-6xl mx-auto">
         {{-- Status da Assinatura Atual --}}
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-6 mb-8 border-l-8 {{ $currentSubscription && $currentSubscription->valid() ? 'border-green-500' : 'border-amber-500' }}">
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-6 mb-8 border-l-8 {{ ($currentSubscription && $currentSubscription->valid()) || $onTrial ? 'border-green-500' : 'border-amber-500' }}">
             <div class="flex flex-col md:flex-row justify-between items-center gap-6">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
                         @if($currentSubscription && $currentSubscription->valid())
                             Sua clínica está ativa!
+                        @elseif($onTrial)
+                            Teste grátis ativo
                         @else
                             Assinatura pendente ou expirada
                         @endif
                     </h2>
                     <p class="text-gray-500 dark:text-gray-400 mt-1">
-                        @if($currentSubscription)
+                        @if($currentSubscription && $currentSubscription->valid())
                             Plano atual: <span class="font-bold text-primary-600">{{ $currentSubscription->type }}</span> •
                             @if($currentSubscription->onGracePeriod())
                                 Expira em: {{ $currentSubscription->ends_at->format('d/m/Y') }}
                             @else
                                 Próxima cobrança: {{ $currentSubscription->nextPayment() ? $currentSubscription->nextPayment()->date()->format('d/m/Y') : '-' }}
                             @endif
+                        @elseif($onTrial)
+                            Seu acesso gratuito termina em <span class="font-bold text-primary-600">{{ $trialEndsAt?->format('d/m/Y') }}</span>. Escolha um plano para manter o acesso após o período de teste.
                         @else
                             Você ainda não possui um plano ativo. Escolha um abaixo para começar.
                         @endif
                     </p>
                 </div>
-                @if($currentSubscription && $canManageSubscription)
+                @if($currentSubscription && $currentSubscription->valid() && $canManageSubscription)
                     <a href="{{ route('subscription.billing') }}" class="inline-flex items-center px-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold rounded-xl transition-all">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                         Portal de Faturamento
@@ -55,7 +59,7 @@
             </div>
         </div>
 
-        @if(!$canManageSubscription && (!$currentSubscription || !$currentSubscription->valid()))
+        @if(!$canManageSubscription && !$onTrial && (!$currentSubscription || !$currentSubscription->valid()))
             <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-100 rounded-2xl p-5 mb-8">
                 <p class="font-bold">Plano expirado</p>
                 <p class="text-sm mt-1">Informe o gestor da clínica para regularizar a assinatura e liberar novamente o acesso administrativo.</p>

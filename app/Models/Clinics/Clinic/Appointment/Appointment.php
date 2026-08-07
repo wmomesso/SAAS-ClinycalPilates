@@ -3,13 +3,14 @@
 namespace App\Models\Clinics\Clinic\Appointment;
 
 use App\Models\Clinics\Clinic\Clinic;
-use App\Models\Clinics\Clinic\HealthInsurance\InsuranceGuide;
 use App\Models\Clinics\Clinic\Finance\PatientPackage;
+use App\Models\Clinics\Clinic\HealthInsurance\InsuranceGuide;
 use App\Models\Clinics\Clinic\Patient\Patient;
 use App\Models\Clinics\Clinic\Room\Room;
 use App\Models\Clinics\Clinic\Services\ServiceType;
 use App\Models\Traits\BelongsToClinic;
 use App\Models\User;
+use Database\Factories\AppointmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,6 +42,11 @@ class Appointment extends Model
         'end_time' => 'datetime',
         'is_insurance' => 'boolean',
     ];
+
+    protected static function newFactory(): AppointmentFactory
+    {
+        return AppointmentFactory::new();
+    }
 
     public function clinic(): BelongsTo
     {

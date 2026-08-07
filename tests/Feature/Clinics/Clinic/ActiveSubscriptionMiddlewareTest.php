@@ -56,6 +56,30 @@ test('users can access clinic administration when clinic has an active plan', fu
     $response->assertOk();
 });
 
+test('users can access clinic administration during the free trial', function () {
+    [$clinic, $user] = clinicUserForSubscriptionMiddleware();
+    $clinic->update([
+        'trial_ends_at' => now()->addDays(7),
+    ]);
+
+    $response = $this->actingAs($user)->get(route('dashboard'));
+
+    $response->assertOk();
+});
+
+test('users are redirected when the free trial has expired and no plan is active', function () {
+    [$clinic, $user] = clinicUserForSubscriptionMiddleware();
+    $clinic->update([
+        'trial_ends_at' => now()->subDay(),
+    ]);
+    $user->givePermissionTo('gerenciar-assinatura-saas');
+
+    $response = $this->actingAs($user)->get(route('dashboard'));
+
+    $response->assertRedirect(route('subscription.index'));
+    $response->assertSessionHas('warning', 'Sua clínica não possui um plano ativo. Escolha um plano para continuar.');
+});
+
 test('users without subscription management permission cannot start checkout', function () {
     [, $user] = clinicUserForSubscriptionMiddleware();
 

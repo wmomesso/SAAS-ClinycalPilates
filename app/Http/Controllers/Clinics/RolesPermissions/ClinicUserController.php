@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Clinics\RolesPermissions;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -75,6 +76,7 @@ class ClinicUserController extends Controller
         ]);
 
         $user->assignRole($validated['role']);
+        event(new Registered($user));
 
         return redirect()->route('clinic-users.index')->with('success', 'Usuário criado com sucesso.');
     }
@@ -97,6 +99,7 @@ class ClinicUserController extends Controller
             'password' => 'nullable|string|min:8',
             'role' => ['required', 'string', Rule::in(self::MANAGEABLE_ROLES)],
             'calendar_color' => 'nullable|string|max:7',
+            'is_active' => ['required', 'boolean'],
         ]);
 
         if (! $clinic_user->hasRole($validated['role']) && $this->roleLimitReached($validated['role'])) {
@@ -108,6 +111,7 @@ class ClinicUserController extends Controller
         $clinic_user->name = $validated['name'];
         $clinic_user->email = $validated['email'];
         $clinic_user->calendar_color = $validated['calendar_color'] ?? null;
+        $clinic_user->is_active = $validated['is_active'];
 
         // Só atualiza a senha se foi fornecida
         if (! empty($validated['password'])) {

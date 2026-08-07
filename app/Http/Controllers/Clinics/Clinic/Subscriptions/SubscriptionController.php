@@ -25,8 +25,10 @@ class SubscriptionController extends Controller
         $plans = SubscriptionPlan::where('is_active', true)->get();
         $currentSubscription = $clinic->subscription('default');
         $canManageSubscription = Auth::user()->can('gerenciar-assinatura-saas');
+        $onTrial = $clinic->onGenericTrial();
+        $trialEndsAt = $clinic->trialEndsAt();
 
-        return view('clinic.subscriptions.index', compact('plans', 'currentSubscription', 'clinic', 'canManageSubscription'));
+        return view('clinic.subscriptions.index', compact('plans', 'currentSubscription', 'clinic', 'canManageSubscription', 'onTrial', 'trialEndsAt'));
     }
 
     /**
@@ -58,12 +60,16 @@ class SubscriptionController extends Controller
             return $clinic->redirectToBillingPortal(route('subscription.index'));
         }
 
-        return $clinic
-            ->newSubscription('default', $validated['plan_id'])
-            ->checkout([
-                'success_url' => route('subscription.index').'?success=true',
-                'cancel_url' => route('subscription.index').'?canceled=true',
-            ]);
+        $subscription = $clinic->newSubscription('default', $validated['plan_id']);
+
+        if ($clinic->onGenericTrial()) {
+            $subscription->trialUntil($clinic->trialEndsAt());
+        }
+
+        return $subscription->checkout([
+            'success_url' => route('subscription.index').'?success=true',
+            'cancel_url' => route('subscription.index').'?canceled=true',
+        ]);
     }
 
     /**

@@ -9,6 +9,7 @@ use App\Models\Clinics\Clinic\Room\Room;
 use App\Models\Clinics\Clinic\Services\ServiceType;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class AppointmentController extends Controller
 {
@@ -141,12 +142,13 @@ class AppointmentController extends Controller
     public function update(Request $request, Appointment $appointment)
     {
         $this->authorize('update', $appointment);
+        $clinicId = $request->user()->clinic_id;
 
         $data = $request->validate([
-            'patient_id' => 'sometimes|required|exists:patients,id',
-            'professional_id' => 'sometimes|required|exists:users,id',
-            'room_id' => 'sometimes|required|exists:rooms,id',
-            'service_type_id' => 'sometimes|required|exists:service_types,id',
+            'patient_id' => ['sometimes', 'required', Rule::exists('patients', 'id')->where(fn ($query) => $query->where('clinic_id', $clinicId)->whereNull('deleted_at'))],
+            'professional_id' => ['sometimes', 'required', Rule::exists('users', 'id')->where(fn ($query) => $query->where('clinic_id', $clinicId)->where('is_active', true))],
+            'room_id' => ['sometimes', 'nullable', Rule::exists('rooms', 'id')->where(fn ($query) => $query->where('clinic_id', $clinicId)->where('is_active', true))],
+            'service_type_id' => ['sometimes', 'required', Rule::exists('service_types', 'id')->where(fn ($query) => $query->where('clinic_id', $clinicId)->where('is_active', true))],
             'start_time' => 'required|date_format:Y-m-d H:i:s',
             'end_time' => 'required|date_format:Y-m-d H:i:s|after:start_time',
             'notes' => 'nullable|string',
@@ -157,7 +159,7 @@ class AppointmentController extends Controller
         $conflictData = [
             'patient_id' => $data['patient_id'] ?? $appointment->patient_id,
             'professional_id' => $data['professional_id'] ?? $appointment->professional_id,
-            'room_id' => $data['room_id'] ?? $appointment->room_id,
+            'room_id' => array_key_exists('room_id', $data) ? $data['room_id'] : $appointment->room_id,
             'start_time' => $data['start_time'] ?? $appointment->start_time->format('Y-m-d H:i:s'),
             'end_time' => $data['end_time'] ?? $appointment->end_time->format('Y-m-d H:i:s'),
         ];
@@ -165,8 +167,7 @@ class AppointmentController extends Controller
         if ($this->hasConflict($conflictData, $appointment->id)) {
             \Illuminate\Support\Facades\Log::warning('Conflito de horário detectado ao atualizar agendamento.', [
                 'appointment_id' => $appointment->id,
-                'data' => $data,
-                'conflictData' => $conflictData,
+                'changed_fields' => array_keys($data),
             ]);
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Conflito de horário detectado.'], 422);
@@ -181,7 +182,7 @@ class AppointmentController extends Controller
 
         \Illuminate\Support\Facades\Log::info('Atualizando agendamento:', [
             'appointment_id' => $appointment->id,
-            'data_to_update' => $data,
+            'changed_fields' => array_keys($data),
         ]);
 
         $appointment->update($data);

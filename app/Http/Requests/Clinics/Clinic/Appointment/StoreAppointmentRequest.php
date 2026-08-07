@@ -20,24 +20,33 @@ class StoreAppointmentRequest extends FormRequest
      */
     public function rules(): array
     {
+        $clinicId = $this->user()->clinic_id;
+
         return [
             'patient_id' => [
                 'required',
-                Rule::exists('patients', 'id'),
+                Rule::exists('patients', 'id')->where(fn ($query) => $query
+                    ->where('clinic_id', $clinicId)
+                    ->whereNull('deleted_at')),
             ],
             'professional_id' => [
                 'required',
                 Rule::exists('users', 'id')->where(function ($query) {
-                    $query->where('clinic_id', auth()->user()->clinic_id);
+                    $query->where('clinic_id', auth()->user()->clinic_id)
+                        ->where('is_active', true);
                 }),
             ],
             'room_id' => [
                 'nullable',
-                Rule::exists('rooms', 'id'),
+                Rule::exists('rooms', 'id')->where(fn ($query) => $query
+                    ->where('clinic_id', $clinicId)
+                    ->where('is_active', true)),
             ],
             'service_type_id' => [
                 'required',
-                Rule::exists('service_types', 'id'),
+                Rule::exists('service_types', 'id')->where(fn ($query) => $query
+                    ->where('clinic_id', $clinicId)
+                    ->where('is_active', true)),
             ],
             'start_time' => ['required', 'date', 'after_or_equal:today'],
             'end_time' => ['nullable', 'date', 'after:start_time'],
